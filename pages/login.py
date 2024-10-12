@@ -1,12 +1,36 @@
 import streamlit as st
+from utils.user_data import get_email
+
+import yaml
+from yaml.loader import SafeLoader
+import streamlit_authenticator as stauth
+from streamlit_authenticator.utilities import (CredentialsError,
+                                               ForgotError,
+                                               Hasher,
+                                               LoginError,
+                                               RegisterError,
+                                               ResetError,
+                                               UpdateError)
 
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
 
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns(3)
-with col2:
-    if st.button(f"Login"):
-        st.switch_page("pages/dashboard.py")
-    if st.button(f"Sign Up"):
-        st.switch_page("pages/dashboard.py")
+st.markdown("----")
+
+# Creating a login widget
+try:
+    st.session_state.authenticator.login(fields={'Username':'Email'})
+except LoginError as e:
+    st.error(e)
+
+# Authenticating user
+if st.session_state['authentication_status']:
+    # Username and email are the same
+    st.session_state.user_email = st.session_state.username
+    # Go to teacher dashboard
+    st.switch_page("pages/dashboard.py")
+elif st.session_state['authentication_status'] is False:
+    st.error('Username/password is incorrect')
+elif st.session_state['authentication_status'] is None:
+    st.warning('Please enter your username and password')

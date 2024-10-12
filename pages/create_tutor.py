@@ -106,7 +106,7 @@ if st.session_state["banner"] is not None:
         if st.button("Load Tutor"):
             st.session_state.model_loaded = False
             # Switch to the selected page
-            st.switch_page('pages/tutor_main.py')
+            st.switch_page('pages/tutor.py')
     elif st.session_state["banner"] == 'missing info':
         st.error("Please provide all of the info below.")
     elif st.session_state["banner"] == 'name exists':

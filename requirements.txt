@@ -9,3 +9,4 @@ chardet
 transformers
 s3fs
 st-files-connection
+streamlit-authenticator

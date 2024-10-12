@@ -1,14 +1,22 @@
 import streamlit as st
 
+def logout(a):
+    st.session_state.authentication_status = None
+    st.session_state.user_email = None
+    st.session_state.role = None
+    st.switch_page("main.py")
+
 def teacher_menu():
     # Show a navigation menu for authenticated users
-    st.sidebar.page_link("pages/dashboard.py", label="Your Dashboard")
+    st.sidebar.page_link("pages/dashboard.py", label="Dashboard")
     st.sidebar.page_link("pages/explore_tutors.py", label="Explore Tutors")
     st.sidebar.page_link("pages/create_tutor.py", label="Build a Tutor")
     # FOR TESTING
     st.sidebar.page_link("main.py", label="Home")
     if st.session_state.role in ["admin"]:
         st.sidebar.page_link("pages/admin.py", label="Manage Tools")
+    if st.session_state.user_email is not None:
+        st.session_state.authenticator.logout(location='sidebar', callback=logout)
 
 def student_menu():
     # Show a navigation menu for unauthenticated users
