@@ -10,7 +10,7 @@ def teacher_menu():
     # Show a navigation menu for authenticated users
     st.sidebar.page_link("pages/dashboard.py", label="Dashboard")
     st.sidebar.page_link("pages/explore_tutors.py", label="Explore Tutors")
-    st.sidebar.page_link("pages/create_tutor.py", label="Build a Tutor")
+    st.sidebar.page_link("pages/build_tutor.py", label="Build a Tutor")
     # FOR TESTING
     st.sidebar.page_link("main.py", label="Home")
     if st.session_state.role in ["admin"]:

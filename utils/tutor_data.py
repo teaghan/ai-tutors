@@ -36,3 +36,30 @@ def available_tutors(df):
 
     # Zip names, descriptions, and creator emails into a list of tuples
     return list(zip(names, descriptions, creator_emails))
+
+
+def create_tutor(fn, df, new_name, new_descr, new_intro, 
+                new_instr, new_guide, api_key, 
+                availability, user_email):
+            # Create a new row as a DataFrame
+            new_row = pd.DataFrame({"Name": [new_name], 
+                                    "Description": [new_descr],
+                                    "Introduction": [new_intro],
+                                    "Instructions": [new_instr], 
+                                    "Guidelines": [new_guide],
+                                    "Creator Email": [user_email],
+                                    "API Key": [api_key],
+                                    "Availability": [availability]})
+            # Concatenate the new row to the DataFrame
+            df = pd.concat([df, new_row], ignore_index=True)
+            write_csv(fn, df)
+
+def reset_build():
+    st.session_state["banner"] = None
+    st.session_state["tool name"] = None
+    st.session_state["description"] = None
+    st.session_state["introduction"] = None
+    st.session_state["instructions"] = None
+    st.session_state["guidelines"] = None
+    st.session_state["availability"] = None
+    st.session_state["api_key"] = None

@@ -10,10 +10,10 @@ class TutorChain:
     def __init__(self, 
                  instructions, 
                  guidelines,
-                 introduction):
+                 introduction, openai_api_key):
 
         # Load API keys
-        openai_api_key = os.environ["OPENAI_API_KEY"]
+        #openai_api_key = os.environ["OPENAI_API_KEY"]
 
         # Initialize the OpenAI LLM
         llm_model = OpenAI(model='gpt-4o-mini', temperature=0.4, api_key=openai_api_key)

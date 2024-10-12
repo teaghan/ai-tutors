@@ -24,8 +24,7 @@ tab1, tab2 = st.tabs(["API Keys", "Manage My Tutors"])
 with tab1:
     with st.expander("What is an API key?"):
         st.markdown("""
-            An **API key** is a unique code that connects your tutors to services like large language models (LLMs). 
-            LLMs require substantial compute power and energy to process data and generate responses, and the API key 
+            Large language models (LLMs) require substantial compute power and energy to process data and generate responses, and the API key 
             authorizes your access to these resources. Without an API key, LLM-powered tutors cannot function.
         """)
 

@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
+from utils.api_keys import ask_for_api
 
 # Streamlit
 st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
@@ -97,12 +98,15 @@ if len(st.session_state.messages)>0:
 # Load model
 if not st.session_state.model_loaded:
     with st.spinner('Loading...'):
+        if st.session_state["api_key"] is None:
+            api_key = ask_for_api()
+        else:
+            api_key = st.session_state["api_key"]
         # Construct pipiline
         st.session_state['tutor_llm'] = TutorChain(st.session_state["instructions"],
                                                    st.session_state["guidelines"],
-                                                   st.session_state["introduction"])
-        st.text(st.session_state["introduction"])
-        st.text(st.session_state["instructions"])
+                                                   st.session_state["introduction"], 
+                                                   api_key)
         st.session_state.model_loads +=1
 
         init_request = st.session_state.tutor_llm.init_request        
@@ -130,3 +134,7 @@ if prompt := st.chat_input():
     
     st.chat_message("assistant", avatar=avatar["assistant"]).markdown(rf"{response}")
     st.rerun()
+
+if st.session_state["tutor_test_mode"]:
+    if st.button(r"$\textsf{\normalsize Edit AI Tutor}$", type="primary"):
+        st.switch_page("pages/build_tutor.py")

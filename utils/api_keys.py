@@ -42,6 +42,16 @@ def delete_key(username, key_name):
     if st.button(f"Cancel", use_container_width=True):
         st.rerun()
 
+# Dialog window to ask for single-use API Key
+@st.dialog("API Key")
+def ask_for_api():
+    st.markdown(f"In order to interact with this tutor you must provide an OpenAI API Key.")
+    # Ask for confirmation
+    api_key = st.text_input('API Key:')
+    if st.button(f"Cancel", use_container_width=True):
+        st.rerun()
+    return api_key
+
 
 def check_openai_api_key(api_key):
     client = openai.OpenAI(api_key=api_key)
