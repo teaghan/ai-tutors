@@ -86,4 +86,4 @@ with tab1:
         add_key()
 # Display My Tutors in tab2 (only tools created by the current user)
 with tab2:
-    display_tools(show_all=False, allow_edit=True)
+    display_tools(show_all=False, allow_edit=True, allow_copy=True)

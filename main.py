@@ -10,12 +10,22 @@ st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercont
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 # Load tutor data
-st.session_state["ai_tutors_data_fn"] = 'data/tutor_info.csv'#'ai-tutors/tutor_info.csv'
-st.session_state["df_tutors"] = read_csv(st.session_state["ai_tutors_data_fn"])
+if "ai_tutors_data_fn" not in st.session_state:
+    st.session_state["ai_tutors_data_fn"] = 'data/tutor_info.csv'#'ai-tutors/tutor_info.csv'
+if "df_tutors" not in st.session_state:
+    st.session_state["df_tutors"] = read_csv(st.session_state["ai_tutors_data_fn"])
 
 # Load user data
-st.session_state["users_data_fn"] = 'data/users.yaml'#'ai-tutors/users.yaml'
-st.session_state["users_config"], st.session_state["authenticator"] = read_users(st.session_state["users_data_fn"])
+if "users_data_fn" not in st.session_state:
+    st.session_state["users_data_fn"] = 'data/users.yaml'#'ai-tutors/users.yaml'
+if "users_config" not in st.session_state:
+    st.session_state["users_config"], st.session_state["authenticator"] = read_users(st.session_state["users_data_fn"])
+
+# Load access codes data
+if "access_codes_data_fn" not in st.session_state:
+    st.session_state["access_codes_data_fn"] = 'data/access_codes.csv'#'ai-tutors/access_codes.csv'
+if "df_access_codes" not in st.session_state:
+    st.session_state["df_access_codes"] = read_csv(st.session_state["access_codes_data_fn"])
 
 if "authentication_status" not in st.session_state:
     st.session_state.authentication_status = False
