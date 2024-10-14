@@ -3,6 +3,7 @@ from utils.menu import menu
 from utils.display_tutors import display_tools
 from utils.user_data import get_api_keys
 from utils.api_keys import add_key, delete_key, check_billing
+from utils.access_codes import display_codes
 
 # Streamlit info
 st.set_page_config(page_title='Dashboard', page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
@@ -18,7 +19,7 @@ def delete_this_key(username, name):
         delete_key(username, name)
     return inside_fn
 
-tab1, tab2 = st.tabs(["API Keys", "Manage My Tutors"])
+tab1, tab2, tab3 = st.tabs(["API Keys", "Manage My Tutors", "Access Codes"])
 
 # API functionality
 with tab1:
@@ -86,4 +87,7 @@ with tab1:
         add_key()
 # Display My Tutors in tab2 (only tools created by the current user)
 with tab2:
-    display_tools(show_all=False, allow_edit=True, allow_copy=True)
+    display_tools(show_all=False, allow_edit=True, allow_copy=True, access_codes=True)
+
+with tab3:
+    display_codes()

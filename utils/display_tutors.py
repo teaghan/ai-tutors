@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.tutor_data import select_instructions, available_tutors, reset_build, delete_tutor_confirm
 from utils.chatbot_setup import reset_chatbot 
+from utils.access_codes import create_code
 
 def load_tool(df_tutors, tool_name, test_mode=False):
 
@@ -32,7 +33,7 @@ def load_editor(df_tutors, tool_name, create_copy=False):
     st.session_state["banner"] = None
     st.switch_page('pages/build_tutor.py')
 
-def display_tools(show_all=True, allow_edit=False, allow_copy=False):
+def display_tools(show_all=True, allow_edit=False, allow_copy=False, access_codes=False):
     if show_all:
         suffix = 'pub'
     else:
@@ -45,8 +46,12 @@ def display_tools(show_all=True, allow_edit=False, allow_copy=False):
             with st.container():
                 st.subheader(name)  # Display tool name
                 st.markdown(desc)      # Display tool description
-                if allow_copy:
-                    col1, col2, col3, col4 = st.columns(4)
+                if allow_copy and access_codes:
+                    col1, col4, col5, col2, col3 = st.columns(5)
+                elif allow_copy and not access_codes:
+                    col1, col4, col2, col3 = st.columns(4)
+                elif not allow_copy and access_codes:
+                    col1, col5, col2, col3 = st.columns(4)
                 else:
                     col1, col2, col3 = st.columns(3)
                 with col1:
@@ -55,9 +60,20 @@ def display_tools(show_all=True, allow_edit=False, allow_copy=False):
                         reset_chatbot()
                         reset_build()
                         load_tool(df_tutors, name)
+                if allow_copy:
+                    with col4:
+                        if st.button(f"Copy & Edit", key=f'{name}_copy_{suffix}', use_container_width=True):
+                            reset_chatbot()
+                            reset_build()
+                            load_editor(df_tutors, name, create_copy=True)
+                if access_codes:
+                    with col5:
+                        if st.button(f"Create Access Code", key=f'{name}_code_{suffix}', use_container_width=True):
+                            reset_build()
+                            create_code(name)
                 if allow_edit:
                     with col2:
-                        if st.button(f"Edit", key=f'{name}_edit_{suffix}', use_container_width=True):
+                        if st.button(f"Edit Original", key=f'{name}_edit_{suffix}', use_container_width=True):
                             reset_chatbot()
                             reset_build()
                             load_editor(df_tutors, name)
@@ -67,11 +83,4 @@ def display_tools(show_all=True, allow_edit=False, allow_copy=False):
                             reset_build()
                             # Dialog box to confirm
                             delete_tutor_confirm(name)
-                if allow_copy:
-                    with col4:
-                        if st.button(f"Copy & Edit", key=f'{name}_copy_{suffix}', use_container_width=True):
-                            reset_chatbot()
-                            reset_build()
-                            load_editor(df_tutors, name, create_copy=True)
-
                 st.markdown('---')
