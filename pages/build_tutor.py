@@ -132,8 +132,12 @@ st.markdown('---')
 st.header('API Key')
 # Load API key for this users email
 api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
-api_key_name_options = ['None']+[nk[0] for nk in api_keys]
-api_key_options = [None]+[nk[1] for nk in api_keys]
+
+api_key_name_options = ['None']
+api_key_options = [None]
+if api_keys is not None:
+    api_key_name_options = api_key_name_options+[nk[0] for nk in api_keys]
+    api_key_options = api_key_options+[nk[1] for nk in api_keys]
 if st.session_state["tutor_test_mode"]:
     index = api_key_options.index(st.session_state["api_key"])
 else:
