@@ -42,7 +42,7 @@ def stream_text():
 
         time.sleep(0.2)
 
-cols = st.columns((1.7, 1, 1.5))
+cols = st.columns((1.6, 1, 1.5))
 cols[1].write_stream(stream_text)
 
 st.markdown("----")
