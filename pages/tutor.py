@@ -4,9 +4,13 @@ from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.api_keys import ask_for_api
 
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 # Streamlit
 st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
                     layout="wide")
+
 
 menu()
 

@@ -11,6 +11,9 @@ st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercont
 # Title
 st.markdown(f"<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 # Display sidebar menu
 menu()
 

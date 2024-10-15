@@ -6,6 +6,9 @@ st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsaf
 
 st.markdown("----")
 
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 col1, col2, col3 = st.columns(3)
 with col2:
     if st.button(f"Login", use_container_width=True):

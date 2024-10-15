@@ -8,6 +8,9 @@ st.set_page_config(page_title='Support', page_icon="https://raw.githubuserconten
 # Title
 st.markdown(f"<h1 style='text-align: center; color: grey;'>Support</h1>", unsafe_allow_html=True)
 
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 # Display page buttons
 menu()
 

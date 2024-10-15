@@ -20,6 +20,9 @@ st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsaf
 
 st.markdown("----")
 
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 # Reset info
 reset_chatbot()
 reset_build()

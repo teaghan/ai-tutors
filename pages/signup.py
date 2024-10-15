@@ -16,6 +16,10 @@ st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercont
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 st.markdown("----")
+
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 # Creating a new user registration widget
 try:
     (user_email,

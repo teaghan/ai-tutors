@@ -15,6 +15,9 @@ st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercont
 # Page Title
 st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;Build an AI Tutor</h1>", unsafe_allow_html=True)
 
+if "user_email" not in st.session_state:
+    st.switch_page("main.py")
+
 # Display page buttons
 menu()
 
@@ -248,7 +251,7 @@ if st.session_state["banner"] is not None:
             if st.button(r"$\textsf{\normalsize Load Tutor}$", 
                             type="primary", use_container_width=True):
                 st.session_state["tutor_test_mode"] = False
-                reset_chatboat()
+                reset_chatbot()
                 st.switch_page('pages/tutor.py')
     elif st.session_state["banner"] == 'missing info':
         st.error("Please provide all of the info below.")
