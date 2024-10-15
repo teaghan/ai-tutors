@@ -2,7 +2,7 @@ import streamlit as st
 
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 
-st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;AI Tutors</h1>", unsafe_allow_html=True)
 
 st.markdown("----")
 
