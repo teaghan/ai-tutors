@@ -8,6 +8,7 @@ from utils.api_keys import add_key
 from utils.menu import menu
 from utils.chatbot_setup import reset_chatbot
 
+
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 
@@ -223,7 +224,7 @@ if test_button or create_button or st.session_state["overwrite"]:
             if test_button:
                 st.session_state["banner"] = None
                 st.session_state["tutor_test_mode"] = True
-                reset_chatboat()
+                reset_chatbot()
                 st.switch_page('pages/tutor.py')
             if create_button or st.session_state["overwrite"]:
                 # Update tutor file and tutor dataframe
