@@ -7,7 +7,7 @@ from utils.menu import menu
 
 # Page info
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
-st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;AI Tutors</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;AI Tutors</h1>", unsafe_allow_html=True)
 
 # Load tutor data
 if "ai_tutors_data_fn" not in st.session_state:
@@ -35,7 +35,7 @@ if "role" not in st.session_state:
     st.session_state.user_email = None
 
 # Display intro text
-intro_text = '   Super simple, kinda slow, pretty reliable.'
+intro_text = 'Super simple, kinda slow, pretty reliable.'
 def stream_text():
     for word in intro_text.split(" "):
         yield word + " "
