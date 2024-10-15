@@ -12,7 +12,6 @@ def read_csv(fn):
 def write_csv(fn, df):
     # Create connection object and write file contents.
     conn = st.connection('s3', type=FilesConnection, ttl=0)
-    st.write(df)
     with conn.open(fn, "wt") as f:
         df.to_csv(f, index=False)
 
