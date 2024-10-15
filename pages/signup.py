@@ -21,7 +21,7 @@ try:
     (user_email,
      username,
     user_name) = st.session_state.authenticator.register_user(merge_username_email=True, 
-                                                              roles=['teacher']
+                                                              roles=['teacher'],
                                                               fields={'Form name':'Teacher Sign-up', 'Email':'Email', 
                                                                     'Username':'Username', 'Password':'Password',       
                                                                     'Repeat password':'Repeat password', 
