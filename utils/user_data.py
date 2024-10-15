@@ -105,9 +105,9 @@ def save_yaml(fn, config):
     yaml_content = yaml.dump(config, default_flow_style=False)
 
     conn = st.connection('s3', type=FilesConnection, ttl=0)
-    with conn.open(fn, "wt") as f:
-        # Write the YAML content to the S3 file path
-        conn.write(fn, yaml_content, input_format="text", ttl=0)
+    
+    # Write the YAML content to the S3 file path
+    conn.write(fn, yaml_content, input_format="text", ttl=0)
 
 
 def reset_password(authenticator):
