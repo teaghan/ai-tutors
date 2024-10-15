@@ -19,7 +19,7 @@ menu()
 
 # Reset info
 reset_chatbot()
-reset_build()
+reset_build(reset_banner=True)
 
 # Create tabs for Public Tutors and My Tutors
 if st.session_state.role == 'student':
@@ -39,4 +39,4 @@ else:
 
     # Display My Tutors in tab2 (only tools created by the current user)
     with tab2:
-        display_tools(show_all=False, allow_edit=True, allow_copy=True, access_codes=True)
+        display_tools(show_all=False, user_display=True, allow_edit=True, allow_copy=True, access_codes=True)

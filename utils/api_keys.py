@@ -3,6 +3,7 @@ import requests
 import streamlit as st
 import openai
 from utils.user_data import add_api_key, delete_api_key, save_yaml
+from utils.chatbot_setup import reset_chatbot 
 
 @st.dialog("Add a New API Key")
 def add_key():
@@ -46,12 +47,12 @@ def delete_key(username, key_name):
 @st.dialog("API Key")
 def ask_for_api():
     st.markdown(f"In order to interact with this tutor you must provide an OpenAI API Key.")
-    # Ask for confirmation
     api_key = st.text_input('API Key:')
-    if st.button(f"Cancel", use_container_width=True):
+    # Ask for confirmation
+    if st.button(f"Use this API Key", use_container_width=True):
+        st.session_state["api_key"]  = api_key
+        reset_chatbot()
         st.rerun()
-    return api_key
-
 
 def check_openai_api_key(api_key):
     client = openai.OpenAI(api_key=api_key)

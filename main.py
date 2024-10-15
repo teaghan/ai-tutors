@@ -7,7 +7,9 @@ from utils.menu import menu
 
 # Page info
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
-st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;AI Tutors</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
+
+st.markdown("----")
 
 # Load tutor data
 if "ai_tutors_data_fn" not in st.session_state:
@@ -34,21 +36,33 @@ if "user_email" not in st.session_state:
 if "role" not in st.session_state:
     st.session_state.user_email = None
 
-# Display intro text
-intro_text = 'Super simple, kinda slow, pretty reliable.'
-def stream_text():
-    for word in intro_text.split(" "):
-        yield word + " "
+# Text to be displayed with newlines
+text = 'Super simple, kinda slow, pretty reliable.'
 
-        time.sleep(0.2)
+# Function to stream text letter by letter
+def stream_text(text):
+    sentence = ""
+    for letter in text:
+        sentence += letter
+        yield sentence.replace("\n", "<br>")  # Use <br> for new lines
 
-cols = st.columns((1.6, 1, 1.5))
-cols[1].write_stream(stream_text)
-
+cols = st.columns((1.4, 2, 1.4))
+if "slow_write_main" not in st.session_state:
+    st.session_state["slow_write_main"] = True
+if st.session_state.slow_write_main:
+    with cols[1]:
+        with st.empty():
+            for sentence in stream_text(text):
+                st.markdown(f"<h4 style='text-align: center; color: grey;'>{sentence}</h4>", unsafe_allow_html=True)
+                time.sleep(0.02)
+    st.session_state.slow_write_main = False
+else:
+    with cols[1]:
+        st.markdown(f"<h4 style='text-align: center; color: grey;'>{text}</h4>", unsafe_allow_html=True)
 st.markdown("----")
 
 # Select role
-col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns((1.3, 2, 1.4))
 with col2:
     if st.button(f"Teachers", use_container_width=True):
         st.session_state.role = 'teacher'

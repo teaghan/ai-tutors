@@ -27,6 +27,8 @@ def select_instructions(df, tool_name):
         guidelines = selected_row["Guidelines"].values[0]
         availability = selected_row["Availability"].values[0]
         api_key = selected_row["API Key"].values[0]
+        if type(api_key)!=str:
+            api_key = None
 
         return description, introduction, instructions, guidelines, availability, api_key
     else:
@@ -37,9 +39,12 @@ def available_tutors(df):
     names = df["Name"].values
     descriptions = df["Description"].values
     creator_emails = df["Creator Email"].values
+    availability = df["Availability"].values
+    api_key = df["API Key"].values
+    api_key = [k if type(k) is str else None for k in api_key]
 
     # Zip names, descriptions, and creator emails into a list of tuples
-    return list(zip(names, descriptions, creator_emails))
+    return list(zip(names, descriptions, creator_emails, availability, api_key))
 
 # Dialog window to ask for overwrite priveleges
 @st.dialog("Overwrite")
@@ -110,8 +115,7 @@ def delete_tutor_confirm(tutor_name):
     if st.button(f"Cancel", use_container_width=True):
         st.rerun()
 
-def reset_build():
-    st.session_state["banner"] = None
+def reset_build(reset_banner=False):
     st.session_state["tool name"] = None
     st.session_state["description"] = None
     st.session_state["introduction"] = None
@@ -121,3 +125,5 @@ def reset_build():
     st.session_state["api_key"] = None
     st.session_state["overwrite_dialog"] = False
     st.session_state["overwrite"] = False
+    if reset_banner:
+        st.session_state["banner"] = None

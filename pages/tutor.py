@@ -67,7 +67,7 @@ if "drop_file" not in st.session_state:
     st.session_state.drop_file = False
 if "zip_file" not in st.session_state:
     st.session_state.zip_file = False
-drop_file = st.sidebar.button(r"$\textsf{\normalsize Attach a file}$", 
+drop_file = st.sidebar.button(r"Attach a file", 
                       type="primary")
 if drop_file:
     st.session_state.drop_file = True
@@ -97,13 +97,13 @@ if len(st.session_state.messages)>0:
         st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
 
+api_key = st.session_state["api_key"]
+if api_key is None:
+    ask_for_api()
+
 # Load model
 if not st.session_state.model_loaded:
     with st.spinner('Loading...'):
-        if st.session_state["api_key"] is None:
-            api_key = ask_for_api()
-        else:
-            api_key = st.session_state["api_key"]
         # Construct pipiline
         st.session_state['tutor_llm'] = TutorChain(st.session_state["instructions"],
                                                    st.session_state["guidelines"],
@@ -137,5 +137,5 @@ if prompt := st.chat_input():
     st.rerun()
 
 if st.session_state["tutor_test_mode"]:
-    if st.button(r"$\textsf{\normalsize Edit AI Tutor}$", type="primary"):
+    if st.button(r"Edit AI Tutor", type="primary"):
         st.switch_page("pages/build_tutor.py")

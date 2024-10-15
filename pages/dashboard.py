@@ -21,7 +21,7 @@ menu()
 
 # Reset info
 reset_chatbot()
-reset_build()
+reset_build(reset_banner=True)
 
 def delete_this_key(username, name):
     def inside_fn():
@@ -78,7 +78,9 @@ with tab1:
             st.subheader('')
         with col4:
             st.subheader('')
+        st.markdown('---')
         for name, key in api_keys:
+            col1, col2, col3, col4 = st.columns([2, 2, 1, 1])
             with col1:
                 st.markdown(name)
             with col2:
@@ -91,12 +93,13 @@ with tab1:
             with col4:
                 if st.button(f"Delete", key=f'{name}_delete', type="primary", on_click=delete_this_key(st.session_state.user_email, name)):
                     pass
+            st.markdown('---')
 
-    if st.button(r"$\textsf{\normalsize Add New Key}$", type="primary"):
+    if st.button(r"Add New Key", type="primary"):
         add_key()
 # Display My Tutors in tab2 (only tools created by the current user)
 with tab2:
-    display_tools(show_all=False, allow_edit=True, allow_copy=True, access_codes=True)
+    display_tools(show_all=False, user_display=True, allow_edit=True, allow_copy=True, access_codes=True)
 
 with tab3:
     display_codes()

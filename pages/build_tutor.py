@@ -133,40 +133,6 @@ with col2:
 st.markdown('---')
 
 
-st.header('API Key')
-# Load API key for this users email
-api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
-
-api_key_name_options = ['None']
-api_key_options = [None]
-if api_keys is not None:
-    api_key_name_options = api_key_name_options+[nk[0] for nk in api_keys]
-    api_key_options = api_key_options+[nk[1] for nk in api_keys]
-if st.session_state["tutor_test_mode"]:
-    index = api_key_options.index(st.session_state["api_key"])
-else:
-    index = 0
-col1, col2, col3 = st.columns(3)
-with col1:
-    api_key_name = st.selectbox('API Key', api_key_name_options, 
-                                label_visibility='hidden', index=index)
-with col2:
-    st.text("")
-    st.text("")
-    if st.button(r"Add New Key", use_container_width=True):
-        add_key()
-with col3:
-    st.text("")
-    st.text("")
-    if st.button(r"Manage API Keys", use_container_width=True):
-        # Go to teacher dashboard
-        st.switch_page("pages/dashboard.py")
-# Select API Key from list
-api_key = api_key_options[api_key_name_options.index(api_key_name)]
-if api_key is None:
-    st.warning('Without an API Key, your tutor will not be usable!')
-st.markdown('---')
-
 st.header('Availability', anchor='bottom')
 availability_list = ['Open to Public', 'Available for Viewing', 'Completely Private']
 if st.session_state["tutor_test_mode"] and (st.session_state["availability"] is not None):
@@ -187,11 +153,50 @@ with st.expander("**What does this mean?**"):
 
 st.markdown('---')
 
+if availability!='Available for Viewing':
+
+    st.header('API Key')
+    # Load API key for this users email
+    api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
+
+    api_key_name_options = ['None']
+    api_key_options = [None]
+    if api_keys is not None:
+        api_key_name_options = api_key_name_options+[nk[0] for nk in api_keys]
+        api_key_options = api_key_options+[nk[1] for nk in api_keys]
+    if st.session_state["tutor_test_mode"]:
+        index = api_key_options.index(st.session_state["api_key"])
+    else:
+        index = 0
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        api_key_name = st.selectbox('API Key', api_key_name_options, 
+                                    label_visibility='hidden', index=index)
+    with col2:
+        st.text("")
+        st.text("")
+        if st.button("Add New Key", use_container_width=True):
+            add_key()
+    with col3:
+        st.text("")
+        st.text("")
+        if st.button("Manage API Keys", use_container_width=True):
+            # Go to teacher dashboard
+            st.switch_page("pages/dashboard.py")
+    # Select API Key from list
+    api_key = api_key_options[api_key_name_options.index(api_key_name)]
+    if api_key is None:
+        st.warning('Without an API Key, your tutor will not be usable!')
+    st.markdown('---')
+else:
+    api_key_name = 'None'
+    api_key = None
+
 col1, col2, col3 = st.columns(3)
 if st.session_state["banner"] != 'success':
     with col2: 
         test_button = st.button("Test Interaction", use_container_width=True)
-        create_button = st.button(r"$\textsf{\normalsize Launch AI Tutor}$", 
+        create_button = st.button("Launch Tutor", 
                                 type="primary", use_container_width=True)
 else:
     test_button = False
@@ -248,7 +253,7 @@ if st.session_state["banner"] is not None:
     if st.session_state["banner"] == 'success':
         st.success("Your AI Tutor is built!")
         with col2:
-            if st.button(r"$\textsf{\normalsize Load Tutor}$", 
+            if st.button("Load Tutor", 
                             type="primary", use_container_width=True):
                 st.session_state["tutor_test_mode"] = False
                 reset_chatbot()

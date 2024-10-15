@@ -25,7 +25,7 @@ if "user_email" not in st.session_state:
 
 # Reset info
 reset_chatbot()
-reset_build()
+reset_build(reset_banner=True)
 
 
 # Creating a login widget
