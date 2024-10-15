@@ -63,7 +63,15 @@ or
 
 "No. The response is not appropriate."
 
+# Moderation Guidelines
+
 {self.guidelines}
+
+### Additional Guidelines to Assess
+
+1. **Math Formatting:**
+   - Responses should **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT.** Responses should **STRICTLY USE `$`,`$` OR `$$`,`$$` FORMATTING.**
+"
         '''
             
         # Formulate the query for moderation based on the full chat history

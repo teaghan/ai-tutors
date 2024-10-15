@@ -4,15 +4,21 @@ from utils.display_tutors import display_tools
 from utils.user_data import get_api_keys
 from utils.api_keys import add_key, delete_key, check_billing
 from utils.access_codes import display_codes
+from utils.tutor_data import reset_build
+from utils.chatbot_setup import reset_chatbot 
 
 # Streamlit info
-st.set_page_config(page_title='Dashboard', page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
+st.set_page_config(page_title='Dashboard', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 
 # Title
 st.markdown(f"<h1 style='text-align: center; color: grey;'>Your Dashboard</h1>", unsafe_allow_html=True)
 
 # Display page buttons
 menu()
+
+# Reset info
+reset_chatbot()
+reset_build()
 
 def delete_this_key(username, name):
     def inside_fn():

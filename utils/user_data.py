@@ -19,13 +19,17 @@ def hash_passwords(config):
 
 def read_yaml(fn):
     # Create connection object and retrieve file contents.
-    #conn = st.connection('s3', type=FilesConnection, ttl=0)
-    # Return pandas dataframe
-    #return conn.read(fn, input_format="csv", ttl=0) 
+    conn = st.connection('s3', type=FilesConnection, ttl=0)
 
-    with open(fn) as file:
-        config = yaml.load(file, Loader=SafeLoader)
-    return config
+    # Read the YAML file from S3 as a string
+    yaml_content = conn.read(fn, input_format="text", ttl=0)
+
+    # Return pandas dataframe
+    return yaml.load(yaml_content, Loader=SafeLoader)
+
+    #with open(fn) as file:
+    #    config = yaml.load(file, Loader=SafeLoader)
+    #return config
 
 def get_email(config, username):
     # Navigate the dictionary to find the email for the given username
@@ -94,8 +98,16 @@ def delete_api_key(config, username, key_name):
 
 def save_yaml(fn, config):
     # Saving config file
-    with open(fn, 'w', encoding='utf-8') as file:
-        yaml.dump(config, file, default_flow_style=False)
+    #with open(fn, 'w', encoding='utf-8') as file:
+    #    yaml.dump(config, file, default_flow_style=False)
+
+    # Convert the config dictionary into a YAML string
+    yaml_content = yaml.dump(config, default_flow_style=False)
+
+    conn = st.connection('s3', type=FilesConnection, ttl=0)
+    with conn.open(fn, "wt") as f:
+        # Write the YAML content to the S3 file path
+        conn.write(fn, yaml_content, input_format="text", ttl=0)
 
 
 def reset_password(authenticator):

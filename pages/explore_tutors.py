@@ -2,15 +2,21 @@ import streamlit as st
 from utils.menu import menu
 from utils.display_tutors import display_tools
 from utils.access_codes import use_code
+from utils.tutor_data import reset_build
+from utils.chatbot_setup import reset_chatbot 
 
 # Streamlit
-st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
+st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 
 # Title
 st.markdown(f"<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 # Display sidebar menu
 menu()
+
+# Reset info
+reset_chatbot()
+reset_build()
 
 # Create tabs for Public Tutors and My Tutors
 if st.session_state.role == 'student':

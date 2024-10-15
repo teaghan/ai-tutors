@@ -6,15 +6,28 @@ def logout(a):
     st.session_state.role = None
     st.switch_page("main.py")
 
+# Dialog window to ask for single-use API Key
+@st.dialog("Support")
+def support_window():
+    st.markdown("""
+Please email build.ai.tutors@gmail.com if you have a
+
+- question to ask
+- feature to request
+- bug to report
+    """)
+    if st.button(f"Close", use_container_width=True, type='primary'):
+        st.rerun()
+
 def teacher_menu():
     # Show a navigation menu for authenticated users
     st.sidebar.page_link("pages/dashboard.py", label="Dashboard")
     st.sidebar.page_link("pages/explore_tutors.py", label="Explore Tutors")
     st.sidebar.page_link("pages/build_tutor.py", label="Build a Tutor")
-    # FOR TESTING
-    st.sidebar.page_link("main.py", label="Home")
+    
     if st.session_state.role in ["admin"]:
         st.sidebar.page_link("pages/admin.py", label="Manage Tools")
+    st.sidebar.page_link("pages/support.py", label="Support")
     if st.session_state.user_email is not None:
         st.session_state.authenticator.logout(location='sidebar', callback=logout)
 

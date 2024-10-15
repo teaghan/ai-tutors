@@ -2,17 +2,17 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import pandas as pd
-from utils.tutor_data import write_csv, select_instructions, create_tutor, ask_for_overwrite
+from utils.tutor_data import write_csv, select_instructions, create_tutor, ask_for_overwrite, reset_build
 from utils.user_data import get_api_keys
 from utils.api_keys import add_key
 from utils.menu import menu
-from utils.chatbot_setup import reset_chatboat
+from utils.chatbot_setup import reset_chatbot
 
 # Page configuration
-st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
+st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 
 # Page Title
-st.markdown("<h1 style='text-align: center; color: grey;'>Build an AI Tutor</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;Build an AI Tutor</h1>", unsafe_allow_html=True)
 
 # Display page buttons
 menu()
@@ -20,7 +20,11 @@ menu()
 if "banner" not in st.session_state:
     st.session_state["banner"] = None
 if "model_loaded" not in st.session_state:
-    st.session_state.model_loaded = False
+    st.session_state["model_loaded"] = False
+if "tutor_test_mode" not in st.session_state:
+    st.session_state["tutor_test_mode"] = False
+if not st.session_state.tutor_test_mode:
+    reset_build()
 
 def scroll_to(element_id):
     components.html(f'''
@@ -34,7 +38,7 @@ def scroll_to(element_id):
 df_tutors = st.session_state["df_tutors"]
 
 # Example tool
-example_name = 'Junior Science Tutor'
+example_name = 'Socratic STEM Tutor'
 _, example_introduction, example_instructions, example_guidelines, _, _ = select_instructions(df_tutors, tool_name=example_name)
 
 with st.expander("**How it all works**"):

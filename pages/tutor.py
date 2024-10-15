@@ -5,24 +5,22 @@ from utils.menu import menu
 from utils.api_keys import ask_for_api
 
 # Streamlit
-st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon_small.png", layout="wide")
+st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
+                    layout="wide")
 
 menu()
 
 # Avatar images
-avatar = {"user": "https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_student_avatar.png",
-          "assistant": "https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_avatar.png"}
+avatar = {"user": "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_student_avatar1.png",
+          "assistant": "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_avatar2.png"}
 
 # Title
-st.markdown(f"<h1 style='text-align: center; color: grey;'>{st.session_state["tool name"]}</h1>", unsafe_allow_html=True)
-
-# In development warning
-#st.warning('Currently testing the Moderator. Come back later for interactions please.', icon="⚠️")
+st.markdown(f"<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;{st.session_state["tool name"]}</h1>", unsafe_allow_html=True)
 
 # Display Tutor Profile Image
-tutor_image_url = "https://raw.githubusercontent.com/teaghan/educational-prompt-engineering/main/images/science_tutor_favicon.png"
+tutor_image_url = "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_avatar1.png"
 col1, col2, col3 = st.columns(3)
-col2.image(tutor_image_url)
+col2.image(tutor_image_url, use_column_width=True)
 
 # Interaction Tips
 with st.expander("Tips for Interacting with AI Tutors"):
