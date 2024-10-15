@@ -40,7 +40,9 @@ def student_menu():
 def menu():
     # Determine if a user is logged in or not, then show the correct
     # navigation menu
-    if st.session_state.role=='student':
+    if "role" not in st.session_state or st.session_state.role is None:
+        st.switch_page("main.py")
+    elif st.session_state.role=='student':
         student_menu()
         return
     teacher_menu()
