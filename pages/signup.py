@@ -35,6 +35,6 @@ try:
         st.session_state.username = user_email
         st.session_state.user_email = user_email
         # Go to teacher dashboard
-        st.switch_page("pages/dashboard.py")
+        st.switch_page("pages/login.py")
 except RegisterError as e:
     st.error(e)
