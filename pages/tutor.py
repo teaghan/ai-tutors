@@ -21,7 +21,8 @@ st.set_page_config(page_title=page_name, page_icon="https://raw.githubuserconten
 
 if "tool name" not in st.session_state:
     cookies_to_session(keys=['tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'])
-    #st.switch_page("pages/explore_tutors.py")
+if st.session_state['tool name'] is None:
+    st.switch_page("pages/explore_tutors.py")
 
 # If necessary, load tutor data, user data, and load cookies
 check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email',
@@ -82,6 +83,8 @@ if "drop_file" not in st.session_state:
     st.session_state.drop_file = False
 if "zip_file" not in st.session_state:
     st.session_state.zip_file = False
+if "invalid_filetype" not in st.session_state:
+    st.session_state.invalid_filetype = False
 drop_file = st.sidebar.button("Attach a file", 
                       type="primary")
 if drop_file:
@@ -92,6 +95,22 @@ if st.session_state.drop_file:
     dropped_files = st.sidebar.file_uploader("Drop a file or multiple files (.txt, .rtf, .pdf, .csv, .docx)", 
                                             accept_multiple_files=True,
                                             key=st.session_state.file_uploader_key)
+    
+    # Validate file extensions
+    invalid_files = []
+    if dropped_files:
+        for uploaded_file in dropped_files:
+            extension = uploaded_file.name.split(".")[-1].lower()
+            if extension not in ['txt', 'rtf', 'pdf', 'csv', 'docx']:
+                invalid_files.append(uploaded_file.name)
+
+    # If invalid files are found, clear the uploaded files and show a warning
+    if invalid_files:
+        dropped_files = []  # Clear the uploaded files
+        st.session_state.invalid_filetype = True
+    else:
+        st.session_state.invalid_filetype = False
+
     # Load file contents
     prompt_f =""
     if dropped_files != []:
@@ -115,12 +134,16 @@ if st.session_state.drop_file:
             else:
                 prompt_f += '\n\n'
             prompt_f += f'**Document Content**:\n\n {doc.text}\n\n'
+else:
+    st.session_state.invalid_filetype = False
 
 # Display conversation
 if len(st.session_state.messages)>0:
     for msg in st.session_state.messages:
         st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
+if st.session_state.invalid_filetype:
+    st.warning(f"Invalid file(s): {', '.join(invalid_files)}. Please remove this one and upload valid file types.")
 
 api_key = st.session_state["api_key"]
 if api_key is None:
@@ -151,12 +174,11 @@ def stream_text(text):
         sentence += letter
         yield sentence#.replace("\n", "<br>") 
 
-if prompt := st.chat_input():
-    if st.session_state.drop_file is True:
+if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
+    if st.session_state.drop_file is True and len(prompt_f)>10:
         prompt_full = prompt + f'\n\n## Uploaded file contents:\n\n{prompt_f}'
     else:
         prompt_full = prompt
-
 
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar=avatar["user"]).write(prompt)
