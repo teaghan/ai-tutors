@@ -7,16 +7,15 @@ from utils.user_data import get_api_keys
 from utils.api_keys import add_key
 from utils.menu import menu
 from utils.chatbot_setup import reset_chatbot
-
+from utils.session import check_state
 
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
-
 # Page Title
 st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;Build an AI Tutor</h1>", unsafe_allow_html=True)
 
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
+# If necessary, load tutor data, user data, and load cookies
+check_state()
 
 # Display page buttons
 menu()
@@ -255,8 +254,14 @@ if st.session_state["banner"] is not None:
         with col2:
             if st.button("Load Tutor", 
                             type="primary", use_container_width=True):
+                st.session_state["tool name"] = new_name
+                st.session_state["description"] = new_descr
+                st.session_state["introduction"] = new_intro
+                st.session_state["instructions"] = new_instr
+                st.session_state["guidelines"] = new_guide
+                st.session_state["availability"] = availability
+                st.session_state["api_key"] = api_key
                 st.session_state["tutor_test_mode"] = False
-                reset_chatbot()
                 st.switch_page('pages/tutor.py')
     elif st.session_state["banner"] == 'missing info':
         st.error("Please provide all of the info below.")

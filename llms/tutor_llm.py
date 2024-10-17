@@ -28,7 +28,7 @@ class TutorChain:
 
     def get_response(self, student_prompt, moderate=True):
         # Prompt AI tutor
-        with st.spinner('Responding...'):
+        with st.spinner('Coming up with a response...'):
             ai_response = self.tutor_llm.get_response(student_prompt)
 
         if moderate:

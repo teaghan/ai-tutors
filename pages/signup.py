@@ -1,24 +1,15 @@
 import streamlit as st
-
-import streamlit_authenticator as stauth
-from streamlit_authenticator.utilities import (CredentialsError,
-                                               ForgotError,
-                                               Hasher,
-                                               LoginError,
-                                               RegisterError,
-                                               ResetError,
-                                               UpdateError)
-
+from streamlit_authenticator.utilities import RegisterError
 from utils.user_data import save_yaml
+from utils.session import check_state
+from utils.cookies import update_cookies
 
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
-
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
-
 st.markdown("----")
 
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
+# If necessary, load tutor data, user data, and load cookies
+check_state()
 
 # Creating a new user registration widget
 try:
@@ -38,6 +29,7 @@ try:
         # Username and email are the same
         st.session_state.username = user_email
         st.session_state.user_email = user_email
+        update_cookies()
         # Go to teacher dashboard
         st.switch_page("pages/login.py")
 except RegisterError as e:

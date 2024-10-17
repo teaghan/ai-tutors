@@ -2,19 +2,20 @@ import streamlit as st
 from utils.menu import menu
 from utils.display_tutors import display_tools
 from utils.user_data import get_api_keys
-from utils.api_keys import add_key, delete_key, check_billing
+from utils.api_keys import add_key, delete_key
 from utils.access_codes import display_codes
 from utils.tutor_data import reset_build
 from utils.chatbot_setup import reset_chatbot 
+from utils.session import check_state
 
 # Streamlit info
 st.set_page_config(page_title='Dashboard', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
-
 # Title
 st.markdown(f"<h1 style='text-align: center; color: grey;'>Your Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("----")
 
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
+# If necessary, load tutor data, user data, and load cookies
+check_state(check_user=True)
 
 # Display page buttons
 menu()

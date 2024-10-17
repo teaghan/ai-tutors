@@ -3,14 +3,15 @@ import streamlit as st
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.api_keys import ask_for_api
-
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
+from utils.session import check_state
+import time
 
 # Streamlit
 st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
                     layout="wide")
 
+# If necessary, load tutor data, user data, and load cookies
+check_state()
 
 menu()
 
@@ -117,6 +118,14 @@ if not st.session_state.model_loaded:
         st.session_state.model_loaded = True
         st.session_state["model_loads"] += 0
         st.rerun()
+
+# Function to stream text letter by letter
+def stream_text(text):
+    sentence = ""
+    for letter in text:
+        sentence += letter
+        yield sentence#.replace("\n", "<br>") 
+
 if prompt := st.chat_input():
     if st.session_state.drop_file is True:
         prompt_full = prompt + f'\n\n## Uploaded file contents:\n\n{prompt_f}'
@@ -132,8 +141,13 @@ if prompt := st.chat_input():
     response = st.session_state.tutor_llm.get_response(prompt_full)
     st.session_state.messages.append({"role": "assistant", "content": rf"{response}"})    
     
+    #st.chat_message("assistant", avatar=avatar["assistant"]).markdown(rf"{response}")
+    with st.chat_message("assistant", avatar=avatar["assistant"]):
+        with st.empty():
+            for sentence in stream_text(response):
+                st.markdown(sentence)
+                time.sleep(0.02)
     
-    st.chat_message("assistant", avatar=avatar["assistant"]).markdown(rf"{response}")
     st.rerun()
 
 if st.session_state["tutor_test_mode"]:

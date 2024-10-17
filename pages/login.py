@@ -1,32 +1,19 @@
 import streamlit as st
-from utils.user_data import get_email
-
-import yaml
-from yaml.loader import SafeLoader
-import streamlit_authenticator as stauth
-from streamlit_authenticator.utilities import (CredentialsError,
-                                               ForgotError,
-                                               Hasher,
-                                               LoginError,
-                                               RegisterError,
-                                               ResetError,
-                                               UpdateError)
+from streamlit_authenticator.utilities import LoginError
 from utils.tutor_data import reset_build
 from utils.chatbot_setup import reset_chatbot 
+from utils.cookies import update_cookies
+from utils.session import check_state
 
-st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
-
+#st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
-st.markdown("----")
-
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
+# If necessary, load tutor data, user data, and load cookies
+check_state()
 
 # Reset info
 reset_chatbot()
 reset_build(reset_banner=True)
-
 
 # Creating a login widget
 try:
@@ -38,6 +25,7 @@ except LoginError as e:
 if st.session_state['authentication_status']:
     # Username and email are the same
     st.session_state.user_email = st.session_state.username
+    update_cookies()
     # Go to teacher dashboard
     st.switch_page("pages/dashboard.py")
 elif st.session_state['authentication_status'] is False:

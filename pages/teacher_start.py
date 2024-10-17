@@ -1,14 +1,13 @@
 import streamlit as st
+from utils.cookies import update_cookies
+from utils.session import check_state
 import time
 
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
-
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
-
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
-st.markdown("----")
+# If necessary, load tutor data, user data, and load cookies
+check_state()
 
 # Text to be displayed with newlines
 text = (
@@ -42,6 +41,8 @@ st.markdown("----")
 col1, col2, col3 = st.columns((1.4, 1.5, 1.5))
 with col2:
     if st.button(f"Login", use_container_width=True):
+        update_cookies()
         st.switch_page("pages/login.py")
     if st.button(f"Sign Up", use_container_width=True):
+        update_cookies()
         st.switch_page("pages/signup.py")

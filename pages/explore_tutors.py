@@ -4,6 +4,7 @@ from utils.display_tutors import display_tools
 from utils.access_codes import use_code
 from utils.tutor_data import reset_build
 from utils.chatbot_setup import reset_chatbot 
+from utils.session import check_state
 
 # Streamlit
 st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
@@ -11,8 +12,8 @@ st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercont
 # Title
 st.markdown(f"<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
-if "user_email" not in st.session_state:
-    st.switch_page("main.py")
+# If necessary, load tutor data, user data, and load cookies
+check_state(check_user=True)
 
 # Display sidebar menu
 menu()

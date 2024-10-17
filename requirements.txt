@@ -10,3 +10,4 @@ transformers
 s3fs
 st-files-connection
 streamlit-authenticator
+extra-streamlit-components

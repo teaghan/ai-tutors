@@ -33,7 +33,8 @@ def load_editor(df_tutors, tool_name, create_copy=False):
     st.session_state["banner"] = None
     st.switch_page('pages/build_tutor.py')
 
-def display_tools(show_all=True, user_display=False, allow_edit=False, allow_copy=False, access_codes=False):
+def display_tools(show_all=True, user_display=False, allow_edit=False, 
+                  allow_copy=False, access_codes=False):
     if show_all:
         suffix = 'pub'
     else:

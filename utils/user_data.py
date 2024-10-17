@@ -56,9 +56,9 @@ def read_users(fn):
     #hash_passwords(config)
     authenticator = stauth.Authenticate(
         config['credentials'],
-        config['cookie']['name'],
-        config['cookie']['key'],
-        config['cookie']['expiry_days']
+        cookie_name='ai_tutors_cookies',
+        cookie_key='cookie_key',
+        cookie_expiry_days=1,
     )
     return config, authenticator
 
