@@ -6,7 +6,7 @@ import random
 import string
 
 from utils.chatbot_setup import reset_chatbot
-from utils.tutor_data import select_instructions, write_csv
+from utils.tutor_data import select_instructions, write_csv, read_csv
 from utils.user_data import get_api_keys
 from utils.cookies import update_tutor_cookies
 
@@ -92,7 +92,6 @@ def code_window(tool_name, api_key_name_options, api_key_options):
 
     if st.button(f"Create", use_container_width=True):
         st.session_state.df_access_codes = add_code(st.session_state.access_codes_data_fn,
-                                                    st.session_state.df_access_codes, 
                                                     access_code, tool_name, api_key, 
                                                     end_date, st.session_state.user_email)
         # Display success banner with the access code
@@ -101,8 +100,11 @@ def code_window(tool_name, api_key_name_options, api_key_options):
     if st.button(f"Close", use_container_width=True):
         st.rerun()
 
-def add_code(fn, df, access_code, tool_name, api_key, 
+def add_code(fn, access_code, tool_name, api_key, 
                 end_date, creator_email):
+    # Load up to date csv
+    df = read_csv(fn)
+
     # Create a new row as a DataFrame
     new_row = pd.DataFrame({
         "Code": [access_code],

@@ -29,6 +29,7 @@ try:
         # Username and email are the same
         st.session_state.username = user_email
         st.session_state.user_email = user_email
+        st.session_state['authentication_status'] = None
         update_cookies()
         # Go to teacher dashboard
         st.switch_page("pages/login.py")

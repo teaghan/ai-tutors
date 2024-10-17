@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import pandas as pd
-from utils.tutor_data import write_csv, select_instructions, create_tutor, ask_for_overwrite, reset_build
+from utils.tutor_data import select_instructions, create_tutor, ask_for_overwrite, reset_build
 from utils.user_data import get_api_keys
 from utils.api_keys import add_key
 from utils.menu import menu
@@ -133,7 +133,7 @@ with col2:
 st.markdown('---')
 
 
-st.header('Availability', anchor='bottom')
+st.header('Availability')
 availability_list = ['Open to Public', 'Available for Viewing', 'Completely Private']
 if st.session_state["tutor_test_mode"] and (st.session_state["availability"] is not None):
     index = availability_list.index(st.session_state["availability"])
@@ -192,6 +192,9 @@ else:
     api_key_name = 'None'
     api_key = None
 
+
+st.header('Finalize', anchor='bottom')
+
 col1, col2, col3 = st.columns(3)
 if st.session_state["banner"] != 'success':
     with col2: 
@@ -238,7 +241,7 @@ if test_button or create_button or st.session_state["overwrite"]:
             if create_button or st.session_state["overwrite"]:
                 # Update tutor file and tutor dataframe
                 st.session_state["df_tutors"] = create_tutor(st.session_state.ai_tutors_data_fn, 
-                                                            df_tutors, new_name, new_descr, 
+                                                            new_name, new_descr, 
                                                             new_intro, new_instr, 
                                                             new_guide, api_key, availability, 
                                                             st.session_state.user_email,

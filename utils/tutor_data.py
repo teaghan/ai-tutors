@@ -60,9 +60,12 @@ def ask_for_overwrite():
         st.session_state["overwrite_dialog"] = False
         st.rerun()
 
-def create_tutor(fn, df, new_name, new_descr, new_intro, 
+def create_tutor(fn, new_name, new_descr, new_intro, 
                  new_instr, new_guide, api_key, 
                  availability, user_email, overwrite=False):
+    # Read current csv
+    df = read_csv(fn)
+
     # Create a new row as a DataFrame
     new_row = pd.DataFrame({
         "Name": [new_name], 
@@ -90,7 +93,10 @@ def create_tutor(fn, df, new_name, new_descr, new_intro,
     
     return df
 
-def delete_tutor(fn, df, tool_name):
+def delete_tutor(fn, tool_name):
+    # Read current csv
+    df = read_csv(fn)
+
     # Check if the tool_name exists in the DataFrame
     if tool_name in df['Name'].values:
         # Remove the row with the matching 'Name'
@@ -100,7 +106,7 @@ def delete_tutor(fn, df, tool_name):
         st.success("Tutor removed successfully.")
         return df
     else:
-        st.error(f"Failed to remove '{tutor_name}'.")
+        st.error(f"Failed to remove '{tool_name}'.")
         return df
 
 # Dialog window to confirm and delete API key
@@ -110,7 +116,7 @@ def delete_tutor_confirm(tutor_name):
     # Ask for confirmation
     if st.button(f"Delete", type='primary', use_container_width=True):
         # Remove the key from the user config
-        st.session_state["df_tutors"] = delete_tutor(st.session_state["ai_tutors_data_fn"], st.session_state["df_tutors"], tutor_name)
+        st.session_state["df_tutors"] = delete_tutor(st.session_state["ai_tutors_data_fn"], tutor_name)
         st.rerun()
     if st.button(f"Cancel", use_container_width=True):
         st.rerun()
