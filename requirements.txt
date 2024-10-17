@@ -11,3 +11,4 @@ s3fs
 st-files-connection
 streamlit-authenticator
 extra-streamlit-components
+docx2txt

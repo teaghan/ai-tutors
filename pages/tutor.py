@@ -1,11 +1,15 @@
 import os
 import streamlit as st
+from llama_index.core import SimpleDirectoryReader
+
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.api_keys import ask_for_api
 from utils.session import check_state
 from utils.cookies import cookies_to_session
 import time
+from tempfile import NamedTemporaryFile
+
 
 if "tool name" in st.session_state:
     page_name = st.session_state["tool name"]
@@ -78,29 +82,39 @@ if "drop_file" not in st.session_state:
     st.session_state.drop_file = False
 if "zip_file" not in st.session_state:
     st.session_state.zip_file = False
-drop_file = st.sidebar.button(r"Attach a file", 
+drop_file = st.sidebar.button("Attach a file", 
                       type="primary")
 if drop_file:
     st.session_state.drop_file = True
 if "file_uploader_key" not in st.session_state:
     st.session_state.file_uploader_key = 0
 if st.session_state.drop_file:
-    dropped_files = st.sidebar.file_uploader("Drop a file or multiple files (.txt, .rtf, .pdf, .csv, .zip)", 
+    dropped_files = st.sidebar.file_uploader("Drop a file or multiple files (.txt, .rtf, .pdf, .csv, .docx)", 
                                             accept_multiple_files=True,
                                             key=st.session_state.file_uploader_key)
     # Load file contents
     prompt_f =""
     if dropped_files != []:
-        for dropped_file in dropped_files:   
-            extract = extract_text_from_different_file_types(dropped_file)
-            if st.session_state.zip_file:  
-                for filename, content in extract:
-                    # Append the file name and content to the prompt text
-                    prompt_f += f"File: \n{filename}\n\nContent: \n{content}\n\n"
-                    prompt_f += "-----\n"
-                    st.session_state.zip_file = False
-            else:  # if it is not zip, the return is a string (here we concatenate the strings)
-                prompt_f = prompt_f + extract + "\n\n"
+        # Collect temporary file paths
+        list_of_file_paths = []
+        if dropped_files:
+            for uploaded_file in dropped_files:
+                # Create a temporary file for each uploaded file
+                with NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as temp_file:
+                    temp_file.write(uploaded_file.getbuffer())  # Write uploaded content to temp file
+                    list_of_file_paths.append(temp_file.name)  # Store temp file path
+
+        # Use the temporary files with SimpleDirectoryReader
+        reader = SimpleDirectoryReader(input_files=list_of_file_paths)
+        documents = reader.load_data()
+
+        for doc in documents:
+            prompt_f += f'**Document File Name**: {doc.metadata['file_name']}'
+            if 'page_label' in doc.metadata:
+                prompt_f += f' Page {doc.metadata['page_label']}\n\n'
+            else:
+                prompt_f += '\n\n'
+            prompt_f += f'**Document Content**:\n\n {doc.text}\n\n'
 
 # Display conversation
 if len(st.session_state.messages)>0:
