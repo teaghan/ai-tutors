@@ -6,7 +6,9 @@ from utils.api_keys import ask_for_api
 from utils.session import check_state
 import time
 
-# Streamlit
+if "tool name" not in st.session_state:
+    st.switch_page("pages/explore_tutors.py")
+
 st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
                     layout="wide")
 

@@ -1,12 +1,13 @@
 import time
 import streamlit as st
-from utils.cookies import update_cookies, cookie_manager, clear_cookies
-from utils.session import check_state
-from utils.session import user_reset
 
 # Page info
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
+
+from utils.session import check_state, user_reset
+from utils.cookies import update_cookies, cookie_manager
+
 
 # If necessary, load tutor data, user data, and load cookies
 check_state()
@@ -50,4 +51,5 @@ with col2:
         user_reset()
         st.session_state.role = 'student'
         update_cookies()
+        st.write(st.session_state['authentication_status'])
         st.switch_page("pages/explore_tutors.py")
