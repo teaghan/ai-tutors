@@ -12,19 +12,6 @@ def logout(a):
     st.switch_page("main.py")
     return
 
-# Dialog window to ask for single-use API Key
-@st.dialog("Support")
-def support_window():
-    st.markdown("""
-Please email build.ai.tutors@gmail.com if you have a
-
-- question to ask
-- feature to request
-- bug to report
-    """)
-    if st.button(f"Close", use_container_width=True, type='primary'):
-        st.rerun()
-
 def teacher_menu():
     # Show a navigation menu for authenticated users
     st.sidebar.page_link("pages/dashboard.py", label="Dashboard")
@@ -43,7 +30,7 @@ def teacher_menu():
 def student_menu():
     # Show a navigation menu for unauthenticated users
     st.sidebar.page_link("pages/explore_tutors.py", label="Explore Tutors")
-    # FOR TESTING
+    st.sidebar.page_link("pages/support.py", label="Support")
     st.sidebar.page_link("main.py", label="Home")
 
 def menu():
