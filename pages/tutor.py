@@ -4,16 +4,24 @@ from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.api_keys import ask_for_api
 from utils.session import check_state
+from utils.cookies import cookies_to_session
 import time
 
-if "tool name" not in st.session_state:
-    st.switch_page("pages/explore_tutors.py")
+if "tool name" in st.session_state:
+    page_name = st.session_state["tool name"]
+else:
+    page_name = 'AI Tutor'
 
-st.set_page_config(page_title=st.session_state["tool name"], page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
+st.set_page_config(page_title=page_name, page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
                     layout="wide")
 
+if "tool name" not in st.session_state:
+    cookies_to_session(keys=['tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'])
+    #st.switch_page("pages/explore_tutors.py")
+
 # If necessary, load tutor data, user data, and load cookies
-check_state()
+check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email',
+                  'tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'])
 
 menu()
 
@@ -103,6 +111,7 @@ if len(st.session_state.messages)>0:
 api_key = st.session_state["api_key"]
 if api_key is None:
     ask_for_api()
+
 
 # Load model
 if not st.session_state.model_loaded:

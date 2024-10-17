@@ -4,6 +4,7 @@ import streamlit as st
 import openai
 from utils.user_data import add_api_key, delete_api_key, save_yaml
 from utils.chatbot_setup import reset_chatbot 
+from utils.cookies import update_tutor_cookies
 
 @st.dialog("Add a New API Key")
 def add_key():
@@ -52,6 +53,7 @@ def ask_for_api():
     if st.button(f"Use this API Key", use_container_width=True):
         st.session_state["api_key"]  = api_key
         reset_chatbot()
+        update_tutor_cookies()
         st.rerun()
 
 def check_openai_api_key(api_key):

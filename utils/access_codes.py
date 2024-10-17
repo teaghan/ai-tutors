@@ -8,6 +8,7 @@ import string
 from utils.chatbot_setup import reset_chatbot
 from utils.tutor_data import select_instructions, write_csv
 from utils.user_data import get_api_keys
+from utils.cookies import update_tutor_cookies
 
 def use_code(df_access, df_tutors, access_code):
     # Get the current date and time
@@ -54,6 +55,7 @@ def use_code(df_access, df_tutors, access_code):
 
         # Launch new chat
         reset_chatbot()
+        update_tutor_cookies()
         st.switch_page('pages/tutor.py')
 
 # Dialog window to ask for single-use API Key

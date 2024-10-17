@@ -1,7 +1,7 @@
 import streamlit as st
 import extra_streamlit_components as stx
 import datetime
-
+import time
 
 cookie_manager = stx.CookieManager(key='ai_tutors_cookies')
 
@@ -13,6 +13,9 @@ def update_cookies(keys=['authentication_status', 'user_email', 'role', 'usernam
         else:
             cookie_manager.set(key, 'None', expires_at=expires_at, key=key)
     return
+
+def update_tutor_cookies(keys=['tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode']):
+    update_cookies(keys=keys)
 
 def cookies_to_session(keys=['authentication_status', 'user_email', 'role', 'username', 'email']):
     for key in keys:

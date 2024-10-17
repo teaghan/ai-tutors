@@ -26,7 +26,7 @@ def user_reset():
     st.session_state.role = None
     return
 
-def check_state(check_user=False):
+def check_state(check_user=False, keys=None):
 
     # Load tutor and user data
     load_data()
@@ -34,8 +34,14 @@ def check_state(check_user=False):
     # Set user login info
     if "user_email" not in st.session_state:
         user_reset()
-    cookies_to_session()
 
+    # Collect cookies
+    if keys is None:
+        cookies_to_session()
+    else:
+        cookies_to_session(keys=keys)
+
+    # Check if user is signed in
     if check_user:
         if st.session_state.authentication_status is None:
             st.switch_page("main.py")

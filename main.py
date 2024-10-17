@@ -13,8 +13,8 @@ from utils.cookies import update_cookies, cookie_manager
 check_state()
 
 # Text to be displayed with newlines
-text = 'Super simple, kinda slow, pretty reliable.'
-
+#text = 'Super simple, kinda slow, pretty reliable.'
+text = 'Built by teachers for students.'
 # Function to stream text letter by letter
 def stream_text(text):
     sentence = ""

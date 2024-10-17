@@ -8,6 +8,7 @@ from utils.api_keys import add_key
 from utils.menu import menu
 from utils.chatbot_setup import reset_chatbot
 from utils.session import check_state
+from utils.cookies import update_tutor_cookies
 
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
@@ -232,6 +233,7 @@ if test_button or create_button or st.session_state["overwrite"]:
                 st.session_state["banner"] = None
                 st.session_state["tutor_test_mode"] = True
                 reset_chatbot()
+                update_tutor_cookies()
                 st.switch_page('pages/tutor.py')
             if create_button or st.session_state["overwrite"]:
                 # Update tutor file and tutor dataframe
@@ -262,6 +264,7 @@ if st.session_state["banner"] is not None:
                 st.session_state["availability"] = availability
                 st.session_state["api_key"] = api_key
                 st.session_state["tutor_test_mode"] = False
+                update_tutor_cookies()
                 st.switch_page('pages/tutor.py')
     elif st.session_state["banner"] == 'missing info':
         st.error("Please provide all of the info below.")

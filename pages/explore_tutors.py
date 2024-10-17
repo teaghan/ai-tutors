@@ -26,7 +26,7 @@ reset_build(reset_banner=True)
 if st.session_state.role == 'student':
     tab1, tab2 = st.tabs(["Access Code", "Public Tutors"])
     with tab1:
-        access_code = st.text_input('Enter your 6-digit access code:')
+        access_code = st.text_input('Enter your 6-digit access code or check out the publicly available tutors in the next tab.')
         if st.button(r"Launch Tutor", type="primary", use_container_width=True):
             use_code(st.session_state.df_access_codes, st.session_state.df_tutors, access_code)
     # Display Public Tutors in tab2 

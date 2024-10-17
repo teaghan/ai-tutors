@@ -2,6 +2,8 @@ import streamlit as st
 from utils.tutor_data import select_instructions, available_tutors, reset_build, delete_tutor_confirm
 from utils.chatbot_setup import reset_chatbot 
 from utils.access_codes import create_code
+from utils.cookies import update_tutor_cookies
+
 
 def load_tool(df_tutors, tool_name, test_mode=False):
 
@@ -14,6 +16,7 @@ def load_tool(df_tutors, tool_name, test_mode=False):
                                                            tool_name=tool_name)
     st.session_state["tool name"] = tool_name
     st.session_state["tutor_test_mode"] = test_mode
+    update_tutor_cookies()
     st.switch_page('pages/tutor.py')
 
 def load_editor(df_tutors, tool_name, create_copy=False):
