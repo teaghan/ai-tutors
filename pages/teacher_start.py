@@ -41,6 +41,7 @@ st.markdown("----")
 col1, col2, col3 = st.columns((1.4, 1.5, 1.5))
 with col2:
     if st.button(f"Login", use_container_width=True):
+        st.session_state['authentication_status'] = None
         update_cookies()
         st.switch_page("pages/login.py")
     if st.button(f"Sign Up", use_container_width=True):
