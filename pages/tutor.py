@@ -143,7 +143,7 @@ if len(st.session_state.messages)>0:
         st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
 if st.session_state.invalid_filetype:
-    st.warning(f"Invalid file(s): {', '.join(invalid_files)}. Please remove this one and upload valid file types.")
+    st.warning(f"Invalid file(s): {', '.join(invalid_files)}. Please remove this one and upload an accepted file type.")
 
 api_key = st.session_state["api_key"]
 if api_key is None:
