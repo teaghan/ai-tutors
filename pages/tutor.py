@@ -7,6 +7,7 @@ from utils.menu import menu
 from utils.api_keys import ask_for_api
 from utils.session import check_state
 from utils.cookies import cookies_to_session
+from utils.save_to_html import download_chat_button
 import time
 from tempfile import NamedTemporaryFile
 
@@ -141,6 +142,10 @@ else:
 if len(st.session_state.messages)>0:
     for msg in st.session_state.messages:
         st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
+
+# The following code is for saving the messages to a html file.
+col1, col2, col3 = st.columns(3)
+download_chat_session = download_chat_button(st.session_state["tool name"], st.session_state.messages, container=col3)
 
 if st.session_state.invalid_filetype:
     st.warning(f"Invalid file(s): {', '.join(invalid_files)}. Please remove this one and upload an accepted file type.")
