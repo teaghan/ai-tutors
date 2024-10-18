@@ -114,8 +114,8 @@ def markdown_to_html(md_content: str, tool_name: str) -> str:
 
 def preprocess_math(html_content: str) -> str:
     """
-    Preprocess the HTML content to ensure that inline and display math expressions are correctly formatted
-    for MathJax to process.
+    Preprocess the HTML content to ensure that inline and display math expressions 
+    are correctly formatted for MathJax to process.
 
     Args:
         html_content (str): The original HTML content.
@@ -123,12 +123,34 @@ def preprocess_math(html_content: str) -> str:
     Returns:
         The HTML content with correctly preprocessed math expressions.
     """
-    # Regex for display math (e.g., $$...$$), replace with MathJax-friendly delimiters
+    # Process display math (e.g., $$...$$) first to avoid interference from inline math
     display_math_pattern = re.compile(r'(?<!\\)\$\$(.+?)\$\$', re.DOTALL)
     html_content = re.sub(display_math_pattern, r'\\[\1\\]', html_content)
 
-    # Regex for inline math (e.g., $...$), replace with MathJax-friendly delimiters
-    inline_math_pattern = re.compile(r'(?<!\\)\$(.+?)\$', re.DOTALL)
+    # Process inline math (e.g., $...$) with stricter negative lookahead
+    inline_math_pattern = re.compile(r'(?<!\\)\$(.+?)\$(?!\$)', re.DOTALL)
+    html_content = re.sub(inline_math_pattern, r'\\(\1\\)', html_content)
+
+    return html_content
+
+
+def preprocess_math(html_content: str) -> str:
+    """
+    Preprocess the HTML content to ensure that inline and display math expressions 
+    are correctly formatted for MathJax to process.
+
+    Args:
+        html_content (str): The original HTML content.
+
+    Returns:
+        The HTML content with correctly preprocessed math expressions.
+    """
+    # Ensure display math is processed first (e.g., $$...$$)
+    display_math_pattern = re.compile(r'(?<!\\)\$\$(.+?)\$\$', re.DOTALL)
+    html_content = re.sub(display_math_pattern, r'\\[\1\\]', html_content)
+
+    # Now process inline math (e.g., $...$) with stricter boundaries
+    inline_math_pattern = re.compile(r'(?<!\\)\$(.+?)\$(?!\$)', re.DOTALL)
     html_content = re.sub(inline_math_pattern, r'\\(\1\\)', html_content)
 
     return html_content
