@@ -16,7 +16,8 @@ st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercont
 st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;Build an AI Tutor</h1>", unsafe_allow_html=True)
 
 # If necessary, load tutor data, user data, and load cookies
-check_state()
+check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email', 'tool name', 
+                  'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'])
 
 # Display page buttons
 menu()
@@ -27,8 +28,10 @@ if "model_loaded" not in st.session_state:
     st.session_state["model_loaded"] = False
 if "tutor_test_mode" not in st.session_state:
     st.session_state["tutor_test_mode"] = False
+
 if not st.session_state.tutor_test_mode:
     reset_build()
+
 
 def scroll_to(element_id):
     components.html(f'''
@@ -213,32 +216,44 @@ if 'overwrite' not in st.session_state:
 if st.session_state["overwrite_dialog"]:
     ask_for_overwrite()
 
+# Set defaults for next re-run
+if new_name:
+    st.session_state["tool name"] = new_name
+if new_descr:
+    st.session_state["description"] = new_descr
+if new_intro:
+    st.session_state["introduction"] = new_intro
+if new_instr:
+    st.session_state["instructions"] = new_instr
+if new_guide:
+    st.session_state["guidelines"] = new_guide
+if availability:
+    st.session_state["availability"] = availability
+if api_key:
+    st.session_state["api_key"] = api_key
+st.session_state["tutor_test_mode"] = True
+
 if test_button or create_button or st.session_state["overwrite"]:
     if new_name and new_descr and new_intro and new_instr and new_guide:
+        if test_button:
+            st.session_state["banner"] = None
+            st.session_state["tutor_test_mode"] = True
+            reset_chatbot()
+            update_tutor_cookies()
+            st.switch_page('pages/tutor.py')
+            
         # Check if name exists
         name_exists = new_name in df_tutors['Name'].values
         if name_exists and not st.session_state["overwrite"]:
             name_match_index = df_tutors.index[df_tutors['Name'] == new_name].tolist()[0]
             # Check if the matching tutor is built by user
             if df_tutors.loc[name_match_index, 'Creator Email']==st.session_state.user_email:
-                st.session_state["overwrite_dialog"] = True
+                if not test_button:
+                    st.session_state["overwrite_dialog"] = True
             else:
                 st.session_state["banner"] = 'name exists'
         if not name_exists or st.session_state["overwrite"]:
-            st.session_state["tool name"] = new_name
-            st.session_state["description"] = new_descr
-            st.session_state["introduction"] = new_intro
-            st.session_state["instructions"] = new_instr
-            st.session_state["guidelines"] = new_guide
-            st.session_state["availability"] = availability
-            st.session_state["api_key"] = api_key
-            if test_button:
-                st.session_state["banner"] = None
-                st.session_state["tutor_test_mode"] = True
-                reset_chatbot()
-                update_tutor_cookies()
-                st.switch_page('pages/tutor.py')
-            if create_button or st.session_state["overwrite"]:
+            if create_button:
                 # Update tutor file and tutor dataframe
                 st.session_state["df_tutors"] = create_tutor(st.session_state.ai_tutors_data_fn, 
                                                             new_name, new_descr, 
@@ -248,8 +263,11 @@ if test_button or create_button or st.session_state["overwrite"]:
                                                             overwrite=st.session_state["overwrite"])
                 st.session_state["banner"] = 'success'
                 st.session_state["overwrite"] = False
+                reset_chatbot()
+                update_tutor_cookies()
     else:
         st.session_state["banner"] = 'missing info'
+        update_tutor_cookies()
     st.rerun()
 
 if st.session_state["banner"] is not None:

@@ -6,7 +6,7 @@ from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.api_keys import ask_for_api
 from utils.session import check_state
-from utils.cookies import cookies_to_session
+from utils.cookies import cookies_to_session, update_tutor_cookies
 from utils.save_to_html import download_chat_button
 import time
 from tempfile import NamedTemporaryFile

@@ -3,7 +3,7 @@ from utils.tutor_data import select_instructions, available_tutors, reset_build,
 from utils.chatbot_setup import reset_chatbot 
 from utils.access_codes import create_code
 from utils.cookies import update_tutor_cookies
-
+import time
 
 def load_tool(df_tutors, tool_name, test_mode=False):
 
@@ -34,6 +34,7 @@ def load_editor(df_tutors, tool_name, create_copy=False):
         st.session_state["tool name"] = tool_name
         st.session_state["tutor_test_mode"] = True
     st.session_state["banner"] = None
+    update_tutor_cookies()
     st.switch_page('pages/build_tutor.py')
 
 def display_tools(show_all=True, user_display=False, allow_edit=False, 
