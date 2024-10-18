@@ -3,14 +3,18 @@
 # Ensure the .streamlit directory exists
 mkdir -p ~/.streamlit/
 
-# Use sed to update or add the necessary server configurations for Heroku
+# Update the [server] section in config.toml
 if grep -q "\[server\]" ~/.streamlit/config.toml; then
-    # Modify the existing [server] section
-    sed -i '' 's/^port.*/port = $PORT/' ~/.streamlit/config.toml
-    sed -i '' 's/^headless.*/headless = true/' ~/.streamlit/config.toml
-    sed -i '' 's/^enableCORS.*/enableCORS = false/' ~/.streamlit/config.toml
+    # Update the existing server settings
+    sed -i'' 's/^headless *= *.*/headless = true/' ~/.streamlit/config.toml
+    sed -i'' 's/^enableCORS *= *.*/enableCORS = false/' ~/.streamlit/config.toml
+
+    # If the port line doesn't exist, add it
+    if ! grep -q "^port" ~/.streamlit/config.toml; then
+        echo "port = \$PORT" >> ~/.streamlit/config.toml
+    fi
 else
-    # Append the [server] section if it doesn't exist (just in case)
+    # Append the [server] section if it doesn't exist
     cat <<EOL >> ~/.streamlit/config.toml
 
 [server]
