@@ -30,7 +30,8 @@ def cookies_to_session(keys=['authentication_status', 'user_email', 'role', 'use
             st.session_state[key] = value
     return
 
-def clear_cookies(keys=['authentication_status', 'user_email', 'role', 'username', 'email'], defaults=['None', 'None', 'None', 'None','None']):
+def clear_cookies(keys=['authentication_status', 'user_email', 'role', 'username', 'email', 'tool name', 
+                        'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode']):
     cookie_keys = cookie_manager.cookies.keys()
     for key in keys:
         if key in cookie_keys:
