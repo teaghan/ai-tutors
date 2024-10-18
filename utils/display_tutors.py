@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.tutor_data import select_instructions, available_tutors, reset_build, delete_tutor_confirm
+from utils.tutor_data import select_instructions, available_tutors, reset_build, delete_tutor_confirm, get_creator_email
 from utils.chatbot_setup import reset_chatbot 
 from utils.access_codes import create_code
 from utils.cookies import update_tutor_cookies
@@ -25,8 +25,14 @@ def load_editor(df_tutors, tool_name, create_copy=False):
      st.session_state["instructions"], 
      st.session_state["guidelines"], 
      st.session_state["availability"], 
-     st.session_state["api_key"]) = select_instructions(df_tutors, 
-                                                           tool_name=tool_name)
+     api_key) = select_instructions(df_tutors, tool_name=tool_name)
+    
+    # Check if this user created this tool
+    if st.session_state["user_email"] == get_creator_email(df_tutors, tool_name=tool_name):
+        st.session_state["api_key"] = api_key
+    else:
+        st.session_state["api_key"] = None
+
     if create_copy:
         st.session_state["tool name"] = tool_name + ' (Copy)'
         st.session_state["tutor_test_mode"] = True

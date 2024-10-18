@@ -34,6 +34,14 @@ def select_instructions(df, tool_name):
     else:
         print(f"No entry found for {tool_name}")
 
+def get_creator_email(df, tool_name):
+    # Select the row where the Name matches the given name
+    selected_row = df[df["Name"] == tool_name]
+    if not selected_row.empty:
+        return selected_row["Creator Email"].values[0]
+    else:
+        return None    
+
 def available_tutors(df):
     # Return a list of tuples of all tools available (Name, Description, Creator Email)
     names = df["Name"].values
