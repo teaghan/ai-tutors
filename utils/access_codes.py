@@ -68,7 +68,6 @@ def not_valid(error_msg='does not exit'):
 # Dialog window to generate access code
 @st.dialog("Access Code")
 def code_window(tool_name, api_key_name_options, api_key_options):
-    st.markdown(f".")
     # Select API Key name
     api_key_name = st.selectbox('API Key', api_key_name_options)
     # Select API Key from list
@@ -127,21 +126,34 @@ def select_apikey(df, tool_name):
     selected_row = df[df["Name"] == tool_name]
     return selected_row["API Key"].values[0]
 
+@st.dialog("No API Key Available")
+def no_keys_window():
+    st.error("There is no API key assigned to this tutor and you have not added one. Please go back to your Dashboard to do so.")
+    if st.button(f"Close", use_container_width=True):
+        st.rerun()
+
 def create_code(tool_name):
 
     # Load API key for this users email
     api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
-    api_key_name_options = [nk[0] for nk in api_keys]
-    api_key_options = [nk[1] for nk in api_keys]
+    if api_keys is not None:
+        api_key_name_options = [nk[0] for nk in api_keys]
+        api_key_options = [nk[1] for nk in api_keys]
+    else:
+        api_key_name_options = []
+        api_key_options = []
 
     # Find defaault API Key
     default_api_key = select_apikey(st.session_state["df_tutors"], tool_name)
-    if default_api_key!='None':
+    if default_api_key is not None:
         api_key_name_options = ['Default'] + api_key_name_options
         api_key_options = [default_api_key] + api_key_options
 
-    # Select duration (or None)
-    code_window(tool_name, api_key_name_options, api_key_options)
+    if len(api_key_options)==0:
+        no_keys_window()
+    else:
+        # Select duration (or None)
+        code_window(tool_name, api_key_name_options, api_key_options)
 
 # Dialog window to confirm and delete API key
 @st.dialog("Delete Access Code")
