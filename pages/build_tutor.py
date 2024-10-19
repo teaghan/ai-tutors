@@ -254,7 +254,7 @@ if test_button or create_button or st.session_state["overwrite"]:
             else:
                 st.session_state["banner"] = 'name exists'
         if not name_exists or st.session_state["overwrite"]:
-            if create_button:
+            if create_button or st.session_state["overwrite"]:
                 # Update tutor file and tutor dataframe
                 st.session_state["df_tutors"] = create_tutor(st.session_state.ai_tutors_data_fn, 
                                                             new_name, new_descr, 
