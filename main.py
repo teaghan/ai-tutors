@@ -1,5 +1,7 @@
 import time
 import streamlit as st
+import gc
+gc.collect()
 
 # Page info
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
