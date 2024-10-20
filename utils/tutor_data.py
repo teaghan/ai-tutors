@@ -15,6 +15,8 @@ def write_csv(fn, df):
     conn = st.connection('s3', type=FilesConnection, ttl=0)
     with conn.open(fn, "wt") as f:
         df.to_csv(f, index=False)
+    # Reset cache so that new data gets loaded
+    read_csv.clear()
 
 def select_instructions(df, tool_name):
     # Select the row where the Name matches the given name

@@ -110,6 +110,8 @@ def save_yaml(fn, config):
     # Open the connection and write the YAML content to S3
     with conn.open(fn, "wt") as file:
         file.write(yaml_content)
+    # Reset cache so that new data gets loaded
+    read_yaml.clear()
 
 
 def reset_password(authenticator):
