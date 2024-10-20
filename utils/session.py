@@ -27,7 +27,7 @@ def user_reset():
     return
 
 def check_state(check_user=False, keys=None, force_reload=False):
-    st.cache_data.clear()
+    #st.cache_data.clear()
 
     # Load tutor and user data
     load_data(force_reload=force_reload)
