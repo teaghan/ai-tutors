@@ -11,6 +11,9 @@ from utils.save_to_html import download_chat_button
 import time
 from tempfile import NamedTemporaryFile
 
+# Clear memory
+import gc
+gc.collect()
 
 if "tool name" in st.session_state:
     page_name = st.session_state["tool name"]

@@ -6,6 +6,10 @@ from utils.tutor_data import reset_build
 from utils.chatbot_setup import reset_chatbot 
 from utils.session import check_state
 
+# Clear memory
+import gc
+gc.collect()
+
 # Streamlit
 st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 

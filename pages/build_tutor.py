@@ -1,7 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-
-import pandas as pd
 from utils.tutor_data import select_instructions, create_tutor, ask_for_overwrite, reset_build
 from utils.user_data import get_api_keys
 from utils.api_keys import add_key
@@ -9,6 +7,10 @@ from utils.menu import menu
 from utils.chatbot_setup import reset_chatbot
 from utils.session import check_state
 from utils.cookies import update_tutor_cookies
+
+# Clear memory
+import gc
+gc.collect()
 
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
