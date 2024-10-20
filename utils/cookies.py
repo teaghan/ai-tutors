@@ -5,7 +5,7 @@ import time
 
 cookie_manager = stx.CookieManager(key='ai_tutors_cookies')
 
-def update_cookies(keys=['authentication_status', 'user_email', 'role', 'username', 'email'], expiration_days=1):
+def update_cookies(keys=['authentication_status', 'user_email', 'role', 'username', 'email'], expiration_days=0.1):
     for key in keys:
         expires_at = datetime.datetime.now() + datetime.timedelta(days=expiration_days)
         if key in st.session_state.keys():

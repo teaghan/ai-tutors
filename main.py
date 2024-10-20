@@ -12,7 +12,9 @@ st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercont
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 from utils.session import check_state, user_reset
-from utils.cookies import update_cookies, cookie_manager
+from utils.cookies import update_cookies, clear_cookies
+
+clear_cookies()
 
 # If necessary, load tutor data, user data, and load cookies
 check_state()
