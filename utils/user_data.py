@@ -17,6 +17,7 @@ def hash_passwords(config):
     # Pre-hashing all plain text passwords once
     stauth.Hasher.hash_passwords(config['credentials'])
 
+@st.cache_data
 def read_yaml(fn):
     # Create connection object and retrieve file contents.
     conn = st.connection('s3', type=FilesConnection, ttl=0)

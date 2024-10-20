@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from st_files_connection import FilesConnection
 
+@st.cache_data
 def read_csv(fn):
     # Create connection object and retrieve file contents.
     conn = st.connection('s3', type=FilesConnection, ttl=0)

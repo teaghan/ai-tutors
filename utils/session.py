@@ -6,7 +6,7 @@ from utils.cookies import cookies_to_session
 def load_data(force_reload=True):
     if ("df_tutors" not in st.session_state) or force_reload:
         # Load tutor data
-        st.session_state["ai_tutors_data_fn"] = 'ai-tutors/tutor_info.csv'#'data/tutor_info.csv'
+        st.session_state["ai_tutors_data_fn"] = 'ai-tutors/tutor_info.csv'
         st.session_state["df_tutors"] = read_csv(st.session_state["ai_tutors_data_fn"])
 
     if ("users_config" not in st.session_state) or force_reload:
@@ -27,6 +27,7 @@ def user_reset():
     return
 
 def check_state(check_user=False, keys=None, force_reload=False):
+    st.cache_data.clear()
 
     # Load tutor and user data
     load_data(force_reload=force_reload)
