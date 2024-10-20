@@ -3,7 +3,11 @@ import extra_streamlit_components as stx
 import datetime
 import time
 
-cookie_manager = stx.CookieManager(key='ai_tutors_cookies')
+@st.cache_resource
+def get_manager(key='ai_tutors_cookies'):
+    return stx.CookieManager(key=key)
+
+cookie_manager = get_manager()#stx.CookieManager(key='ai_tutors_cookies')
 
 def update_cookies(keys=['authentication_status', 'user_email', 'role', 'username', 'email'], expiration_days=0.1):
     for key in keys:
