@@ -2,10 +2,10 @@ import time
 import streamlit as st
 
 # Clear memory
-import gc
-gc.collect()
-for key in st.session_state.keys():
-    del st.session_state[key]
+#import gc
+#gc.collect()
+#for key in st.session_state.keys():
+#    del st.session_state[key]
 
 # Page info
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")

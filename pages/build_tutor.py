@@ -9,8 +9,8 @@ from utils.session import check_state
 from utils.cookies import update_tutor_cookies
 
 # Clear memory
-import gc
-gc.collect()
+#import gc
+#gc.collect()
 
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")

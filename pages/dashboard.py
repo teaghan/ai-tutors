@@ -9,8 +9,8 @@ from utils.chatbot_setup import reset_chatbot
 from utils.session import check_state
 
 # Clear memory
-import gc
-gc.collect()
+#import gc
+#gc.collect()
 
 # Streamlit info
 st.set_page_config(page_title='Dashboard', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
