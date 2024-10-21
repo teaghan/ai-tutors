@@ -1,7 +1,11 @@
 import streamlit as st
 from utils.tutor_data import read_csv
 from utils.user_data import read_users
-from utils.cookies import cookies_to_session
+from utils.cookies import cookies_to_session, clear_cookies#, get_manager
+from streamlit_cookies_controller import CookieController
+
+#from streamlitextras.cookiemanager import get_cookie_manager
+import time
 
 def load_data(force_reload=True):
     #if ("df_tutors" not in st.session_state) or force_reload:
@@ -27,16 +31,26 @@ def user_reset():
     return
 
 def check_state(check_user=False, keys=None, force_reload=False):
-    #st.cache_data.clear()
 
     # Load tutor and user data
     load_data(force_reload=force_reload)
+
+    if "cookie_manager" not in st.session_state:
+        #cookie_manager = StLocalStorage()
+
+        cookie_manager = CookieController()
+        #time.sleep(1) 
+        #cookies = cookie_manager.getAll()
+        st.session_state['cookie_manager'] = cookie_manager
+        st.rerun()
+        # TESTING
+        #clear_cookies()
 
     # Set user login info
     if "user_email" not in st.session_state:
         user_reset()
 
-    # Collect cookies
+    ## Collect cookies
     if keys is None:
         cookies_to_session()
     else:
@@ -46,4 +60,5 @@ def check_state(check_user=False, keys=None, force_reload=False):
     if check_user:
         if st.session_state.authentication_status is None:
             st.switch_page("main.py")
+
     return 

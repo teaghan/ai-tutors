@@ -1,14 +1,19 @@
 import streamlit as st
 from utils.session import user_reset
-from utils.cookies import clear_cookies, update_cookies, cookie_manager
+from utils.cookies import clear_cookies, update_cookies
 
 def logout(a):
-    #st.write('AA',st.session_state.username)
-    #st.session_state["authenticator"].authentication_controller.logout()
-    #st.session_state["authenticator"].cookie_controller.delete_cookie()
+    try:
+        st.session_state["authenticator"].authentication_controller.logout()
+        st.session_state["authenticator"].cookie_controller.delete_cookie()
+    except:
+        pass
     user_reset()
     update_cookies()
-    #clear_cookies()
+    clear_cookies()
+    # Delete all the items in Session state
+    for key in st.session_state.keys():
+        del st.session_state[key]
     st.switch_page("main.py")
     return
 

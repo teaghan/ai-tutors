@@ -32,6 +32,19 @@ def read_yaml(fn):
     #    config = yaml.load(file, Loader=SafeLoader)
     #return config
 
+def read_users(fn):
+
+    config = read_yaml(fn)
+    #hash_passwords(config)
+    authenticator = stauth.Authenticate(
+        config['credentials'],
+        cookie_name='ai_tutors_cookies',
+        cookie_key='cookie_key',
+        cookie_expiry_days=1,
+    )
+    return config, authenticator
+
+
 def get_email(config, username):
     # Navigate the dictionary to find the email for the given username
     return config['credentials']['usernames'][username]['email']
@@ -50,18 +63,6 @@ def get_api_keys(config, username):
     except KeyError:
         # Return None if the username is not found
         return None
-
-def read_users(fn):
-
-    config = read_yaml(fn)
-    #hash_passwords(config)
-    authenticator = stauth.Authenticate(
-        config['credentials'],
-        cookie_name='ai_tutors_cookies',
-        cookie_key='cookie_key',
-        cookie_expiry_days=1,
-    )
-    return config, authenticator
 
 def add_api_key(config, username, key_name, key_value):
     try:

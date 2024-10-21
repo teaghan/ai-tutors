@@ -19,7 +19,7 @@ st.markdown(f"<h1 style='text-align: center; color: grey;'>Your Dashboard</h1>",
 st.markdown("----")
 
 # If necessary, load tutor data, user data, and load cookies
-check_state(check_user=True)
+check_state()#check_user=True)
 
 # Display page buttons
 menu()

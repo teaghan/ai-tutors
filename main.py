@@ -1,33 +1,24 @@
 import time
 import streamlit as st
 
-# Clear memory
-#import gc
-#gc.collect()
-#for key in st.session_state.keys():
-#    del st.session_state[key]
-
 # Page info
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 from utils.session import check_state, user_reset
-from utils.cookies import update_cookies, clear_cookies
-
-clear_cookies()
+from utils.cookies import update_cookies
 
 # If necessary, load tutor data, user data, and load cookies
 check_state()
 
 # Text to be displayed with newlines
-#text = 'Super simple, kinda slow, pretty reliable.'
 text = 'Built by teachers for students.'
 # Function to stream text letter by letter
 def stream_text(text):
     sentence = ""
     for letter in text:
         sentence += letter
-        yield sentence.replace("\n", "<br>")  # Use <br> for new lines
+        yield sentence.replace("\n", "<br>")
 
 cols = st.columns((1.4, 2, 1.4))
 if "slow_write_main" not in st.session_state:
