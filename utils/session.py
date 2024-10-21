@@ -1,10 +1,8 @@
 import streamlit as st
 from utils.tutor_data import read_csv
 from utils.user_data import read_users
-from utils.cookies import cookies_to_session, clear_cookies#, get_manager
+from utils.cookies import cookies_to_session
 from streamlit_cookies_controller import CookieController
-
-#from streamlitextras.cookiemanager import get_cookie_manager
 import time
 
 def load_data(force_reload=True):
@@ -15,12 +13,12 @@ def load_data(force_reload=True):
 
     #if ("users_config" not in st.session_state) or force_reload:
     # Load user data
-    st.session_state["users_data_fn"] = 'ai-tutors/users.yaml'#'data/users.yaml'
+    st.session_state["users_data_fn"] = 'ai-tutors/users.yaml'
     st.session_state["users_config"], st.session_state["authenticator"] = read_users(st.session_state["users_data_fn"])
 
     #if ("df_access_codes" not in st.session_state) or force_reload:
     # Load access codes data
-    st.session_state["access_codes_data_fn"] = 'ai-tutors/access_codes.csv'#'data/access_codes.csv'
+    st.session_state["access_codes_data_fn"] = 'ai-tutors/access_codes.csv'
     st.session_state["df_access_codes"] = read_csv(st.session_state["access_codes_data_fn"])
 
 def user_reset():
@@ -36,18 +34,11 @@ def check_state(check_user=False, keys=None, force_reload=False):
     load_data(force_reload=force_reload)
 
     if "cookie_manager" not in st.session_state:
-        #cookie_manager = StLocalStorage()
-
         cookie_manager = CookieController()
-        #time.sleep(1) 
-        #cookies = cookie_manager.getAll()
-        #time.sleep(3)
-        #st.write(cookies)
-        #time.sleep(5)
         st.session_state['cookie_manager'] = cookie_manager
-        #st.rerun()
-        # TESTING
-        #clear_cookies()
+        #st.session_state["authenticator"].login()
+    #cookies = st.session_state['cookie_manager'].getAll()
+    #st.write(cookies)
 
     # Set user login info
     if "user_email" not in st.session_state:
@@ -62,6 +53,24 @@ def check_state(check_user=False, keys=None, force_reload=False):
     # Check if user is signed in
     if check_user:
         if st.session_state.authentication_status is None:
-            st.switch_page("main.py")
+            #st.switch_page("main.py")
+            login()
 
     return 
+
+from streamlit_authenticator.utilities import LoginError 
+from utils.cookies import update_cookies
+
+def login():
+    # Creating a login widget
+    try:
+        st.session_state.authenticator.login(fields={'Username':'Email'})
+    except LoginError as e:
+        st.error(e)
+    # Authenticating user
+    if st.session_state['authentication_status']:
+        # Username and email are the same
+        st.session_state.user_email = st.session_state.username
+        update_cookies()
+    else:
+        st.switch_page("main.py")
