@@ -41,8 +41,11 @@ def check_state(check_user=False, keys=None, force_reload=False):
         cookie_manager = CookieController()
         #time.sleep(1) 
         #cookies = cookie_manager.getAll()
+        #time.sleep(3)
+        #st.write(cookies)
+        #time.sleep(5)
         st.session_state['cookie_manager'] = cookie_manager
-        st.rerun()
+        #st.rerun()
         # TESTING
         #clear_cookies()
 

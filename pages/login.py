@@ -5,7 +5,7 @@ from utils.chatbot_setup import reset_chatbot
 from utils.cookies import update_cookies
 from utils.session import check_state
 
-#st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
+st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 # If necessary, load tutor data, user data, and load cookies
