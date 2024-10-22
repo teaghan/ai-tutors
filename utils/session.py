@@ -1,23 +1,20 @@
 import streamlit as st
 from utils.tutor_data import read_csv
 from utils.user_data import read_users
-from utils.cookies import cookies_to_session
+from utils.cookies import cookies_to_session, NEW_CM, clear_cookies
 from streamlit_cookies_controller import CookieController
 import time
 
-def load_data(force_reload=True):
-    #if ("df_tutors" not in st.session_state) or force_reload:
-    # Load tutor data
+def load_data():
+    # Load tutor data file or cached data
     st.session_state["ai_tutors_data_fn"] = 'ai-tutors/tutor_info.csv'
     st.session_state["df_tutors"] = read_csv(st.session_state["ai_tutors_data_fn"])
 
-    #if ("users_config" not in st.session_state) or force_reload:
-    # Load user data
+    # Load user data file or cached data
     st.session_state["users_data_fn"] = 'ai-tutors/users.yaml'
     st.session_state["users_config"], st.session_state["authenticator"] = read_users(st.session_state["users_data_fn"])
 
-    #if ("df_access_codes" not in st.session_state) or force_reload:
-    # Load access codes data
+    # Load access codes data file or cached data
     st.session_state["access_codes_data_fn"] = 'ai-tutors/access_codes.csv'
     st.session_state["df_access_codes"] = read_csv(st.session_state["access_codes_data_fn"])
 
@@ -28,33 +25,37 @@ def user_reset():
     st.session_state.role = None
     return
 
-def check_state(check_user=False, keys=None, force_reload=False):
+def check_state(check_user=False, keys=None, reset_cookies=False, cookies_working=False):
 
     # Load tutor and user data
-    load_data(force_reload=force_reload)
+    load_data()
 
-    if "cookie_manager" not in st.session_state:
-        cookie_manager = CookieController()
-        st.session_state['cookie_manager'] = cookie_manager
-        #st.session_state["authenticator"].login()
-    #cookies = st.session_state['cookie_manager'].getAll()
-    #st.write(cookies)
+    if cookies_working:
+        if "cookie_manager" not in st.session_state:
+            cookie_manager = NEW_CM()#CookieController()
+            st.session_state['cookie_manager'] = cookie_manager
+            #st.session_state["authenticator"].login()
+        if reset_cookies:
+            clear_cookies()
+
+    #st.write(st.session_state['cookie_manager'].cookies)
 
     # Set user login info
     if "user_email" not in st.session_state:
         user_reset()
 
     ## Collect cookies
-    if keys is None:
-        cookies_to_session()
-    else:
-        cookies_to_session(keys=keys)
-
+    if cookies_working:
+        if keys is None:
+            cookies_to_session()
+        else:
+            cookies_to_session(keys=keys)
+    
     # Check if user is signed in
     if check_user:
         if st.session_state.authentication_status is None:
-            #st.switch_page("main.py")
-            login()
+            st.switch_page("main.py")
+            #login()
 
     return 
 

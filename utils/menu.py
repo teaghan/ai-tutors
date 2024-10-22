@@ -10,7 +10,13 @@ def logout(a):
         pass
     user_reset()
     update_cookies()
-    clear_cookies()
+    #clear_cookies()
+    #try:
+    #st.session_state['cookie_manager'].save()
+    #st.session_state['cookie_manager'].cookies.save()
+    #st.session_state['cookie_manager'].save(key='delete_save')
+    #except:
+    #pass
     # Delete all the items in Session state
     for key in st.session_state.keys():
         del st.session_state[key]

@@ -27,6 +27,7 @@ cols = st.columns((2, 2, 1.4))
 if "slow_write_teacher" not in st.session_state:
     st.session_state["slow_write_teacher"] = True
 if st.session_state.slow_write_teacher:
+    time.sleep(0.3)
     with cols[1]:
         with st.empty():
             for sentence in stream_text(text):

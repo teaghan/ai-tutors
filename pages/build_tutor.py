@@ -20,7 +20,7 @@ st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;Buil
 # If necessary, load tutor data, user data, and load cookies
 check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email', 'tool name', 
                   'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'], 
-            force_reload=True)
+            check_user=True)
 
 # Display page buttons
 menu()
