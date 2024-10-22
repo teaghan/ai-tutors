@@ -24,7 +24,7 @@ cols = st.columns((1.4, 2, 1.4))
 if "slow_write_main" not in st.session_state:
     st.session_state["slow_write_main"] = True
 if st.session_state.slow_write_main:
-    time.sleep(0.3)
+    time.sleep(0.7)
     with cols[1]:
         with st.empty():
             for sentence in stream_text(text):

@@ -141,10 +141,30 @@ if st.session_state.drop_file:
 else:
     st.session_state.invalid_filetype = False
 
+# Function to stream text letter by letter
+def stream_text(text):
+    sentence = ""
+    for letter in text:
+        sentence += letter
+        yield sentence
+
+if "stream_init_msg" not in st.session_state:
+    st.session_state.stream_init_msg = True
+
 # Display conversation
 if len(st.session_state.messages)>0:
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
+    if st.session_state.stream_init_msg:
+        msg = st.session_state.messages[0]
+        with st.chat_message(msg["role"], avatar=avatar[msg["role"]]):
+            intro_msg = rf"{msg["content"]}"
+            with st.empty():
+                for char in stream_text(intro_msg):
+                    st.markdown(char)
+                    time.sleep(0.02)
+        st.session_state.stream_init_msg = False
+    else:
+        for msg in st.session_state.messages:
+            st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
 # The following code is for saving the messages to a html file.
 col1, col2, col3 = st.columns(3)
@@ -173,14 +193,7 @@ if not st.session_state.model_loaded:
 
         st.session_state.model_loaded = True
         st.session_state["model_loads"] += 0
-        st.rerun()
-
-# Function to stream text letter by letter
-def stream_text(text):
-    sentence = ""
-    for letter in text:
-        sentence += letter
-        yield sentence#.replace("\n", "<br>") 
+        #st.rerun()
 
 if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
     if st.session_state.drop_file is True and len(prompt_f)>10:
