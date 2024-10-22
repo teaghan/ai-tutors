@@ -7,7 +7,7 @@ transformers
 s3fs
 st-files-connection
 streamlit-authenticator
-streamlit-cookies-controller
 docx2txt
 Pygments
 markdown
+streamlit-cookies-manager
