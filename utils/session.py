@@ -2,7 +2,7 @@ import streamlit as st
 from utils.tutor_data import read_csv
 from utils.user_data import read_users
 from utils.cookies import cookies_to_session, NEW_CM, clear_cookies
-from streamlit_cookies_controller import CookieController
+#from streamlit_cookies_controller import CookieController
 import time
 
 def load_data():
