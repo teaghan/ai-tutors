@@ -58,7 +58,7 @@ def clear_cookies(keys=['authentication_status', 'user_email', 'role', 'username
 
 
 
-from streamlit_cookies_manager import CookieManager, EncryptedCookieManager
+#from streamlit_cookies_manager import CookieManager, EncryptedCookieManager
 
 class NEW_CM:
     def __init__(self) -> None:

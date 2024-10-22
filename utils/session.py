@@ -1,7 +1,7 @@
 import streamlit as st
 from utils.tutor_data import read_csv
 from utils.user_data import read_users
-from utils.cookies import cookies_to_session, NEW_CM, clear_cookies
+from utils.cookies import cookies_to_session, clear_cookies#, NEW_CM
 #from streamlit_cookies_controller import CookieController
 import time
 
