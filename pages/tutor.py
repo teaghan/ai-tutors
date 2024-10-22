@@ -26,10 +26,8 @@ st.set_page_config(page_title=page_name, page_icon="https://raw.githubuserconten
 
 # If necessary, load tutor data, user data, and load cookies
 check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email',
-                  'tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'])
-
-if st.session_state['tool name'] is None:
-    st.switch_page("pages/explore_tutors.py")
+                  'tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'],
+                  check_user=True)
 
 
 menu()

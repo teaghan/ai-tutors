@@ -19,7 +19,7 @@ def load_data():
     st.session_state["df_access_codes"] = read_csv(st.session_state["access_codes_data_fn"])
 
 def user_reset():
-    st.session_state.authentication_status = False
+    st.session_state.authentication_status = None
     st.session_state.user_email = None
     st.session_state.username = None
     st.session_state.role = None

@@ -49,5 +49,6 @@ with col2:
     if st.button(f"Students", use_container_width=True):
         user_reset()
         st.session_state.role = 'student'
+        st.session_state['authentication_status'] = False
         update_cookies()
         st.switch_page("pages/explore_tutors.py")
