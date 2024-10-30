@@ -11,10 +11,6 @@ from utils.save_to_html import download_chat_button
 import time
 from tempfile import NamedTemporaryFile
 
-# Clear memory
-#import gc
-#gc.collect()
-
 if "tool name" in st.session_state:
     page_name = st.session_state["tool name"]
 else:
@@ -23,12 +19,10 @@ else:
 st.set_page_config(page_title=page_name, page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
                     layout="wide")
 
-
 # If necessary, load tutor data, user data, and load cookies
 check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email',
                   'tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'],
                   check_user=True)
-
 
 menu()
 
@@ -136,6 +130,10 @@ if st.session_state.drop_file:
             else:
                 prompt_f += '\n\n'
             prompt_f += f'**Document Content**:\n\n {doc.text}\n\n'
+
+        # Clear temp data
+        for file_path in list_of_file_paths:
+            os.remove(file_path)
 else:
     st.session_state.invalid_filetype = False
 
@@ -180,9 +178,11 @@ if api_key is None:
 if not st.session_state.model_loaded:
     with st.spinner('Loading...'):
         # Construct pipiline
-        st.session_state['tutor_llm'] = TutorChain(st.session_state["instructions"],
+        st.session_state['tutor_llm'] = TutorChain(st.session_state["tool name"],
+                                                   st.session_state["instructions"],
                                                    st.session_state["guidelines"],
-                                                   st.session_state["introduction"], 
+                                                   st.session_state["introduction"],
+                                                   st.session_state["knowledge_file_paths"],
                                                    api_key)
         st.session_state.model_loads +=1
 
@@ -191,7 +191,6 @@ if not st.session_state.model_loaded:
 
         st.session_state.model_loaded = True
         st.session_state["model_loads"] += 0
-        #st.rerun()
 
 if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
     if st.session_state.drop_file is True and len(prompt_f)>10:
@@ -202,8 +201,6 @@ if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar=avatar["user"]).write(prompt)
 
-    # Use a spinner to indicate processing and display the assistant's response after processing
-    #with st.spinner('Thinking...'):
     response = st.session_state.tutor_llm.get_response(prompt_full)
     st.session_state.messages.append({"role": "assistant", "content": rf"{response}"})    
     

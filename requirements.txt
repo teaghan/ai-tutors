@@ -11,3 +11,5 @@ docx2txt
 Pygments
 markdown
 streamlit-cookies-manager
+pinecone
+llama-index-vector-stores-pinecone

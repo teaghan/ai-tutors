@@ -1,12 +1,13 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from utils.tutor_data import select_instructions, create_tutor, ask_for_overwrite, reset_build
+from utils.tutor_data import select_instructions, create_tutor, ask_for_overwrite, reset_build, delete_embeddings
 from utils.user_data import get_api_keys
 from utils.api_keys import add_key
 from utils.menu import menu
 from utils.chatbot_setup import reset_chatbot
 from utils.session import check_state
 from utils.cookies import update_tutor_cookies
+from utils.knowledge_files import drop_files, save_files, load_file_to_temp
 
 # Clear memory
 #import gc
@@ -34,7 +35,6 @@ if "tutor_test_mode" not in st.session_state:
 
 if not st.session_state.tutor_test_mode:
     reset_build()
-
 
 def scroll_to(element_id):
     components.html(f'''
@@ -120,6 +120,18 @@ col1, col2 = st.columns(2)
 with col2:
     with st.popover("Preview Instructions in Markdown", use_container_width=True):
         st.markdown(new_instr)
+st.markdown('---')
+
+st.header('Knowledge Files (optional)')
+if 'knowledge_file_paths' in st.session_state:
+    value = st.session_state["knowledge_file_paths"]
+else:
+    value = []
+st.markdown('Include any knowledge files that will be useful for the tutor to use as background information.')
+col1, col2 = st.columns(2)
+dropped_files, existing_file_paths_chosen = drop_files(col1, value)
+if dropped_files and st.session_state["banner"] != 'success':
+    st.warning('Note that these new files will not be added to your tutor for testing until you have saved your tutor using the "Launch Tutor" button below.')
 st.markdown('---')
 
 st.header('Guidelines')
@@ -243,6 +255,7 @@ if test_button or create_button or st.session_state["overwrite"]:
             st.session_state["tutor_test_mode"] = True
             reset_chatbot()
             update_tutor_cookies()
+            delete_embeddings(new_name)
             st.switch_page('pages/tutor.py')
             
         # Check if name exists
@@ -257,10 +270,17 @@ if test_button or create_button or st.session_state["overwrite"]:
                 st.session_state["banner"] = 'name exists'
         if not name_exists or st.session_state["overwrite"]:
             if create_button or st.session_state["overwrite"]:
+
+                knowledge_file_paths = save_files(new_name, dropped_files)
+                if len(existing_file_paths_chosen)>0:
+                    # Include existing paths
+                    knowledge_file_paths = knowledge_file_paths + existing_file_paths_chosen
+                st.session_state["knowledge_file_paths"] = knowledge_file_paths
                 # Update tutor file and tutor dataframe
                 st.session_state["df_tutors"] = create_tutor(st.session_state.ai_tutors_data_fn, 
                                                             new_name, new_descr, 
                                                             new_intro, new_instr, 
+                                                            knowledge_file_paths,
                                                             new_guide, api_key, availability, 
                                                             st.session_state.user_email,
                                                             overwrite=st.session_state["overwrite"])

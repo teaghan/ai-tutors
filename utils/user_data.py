@@ -41,6 +41,7 @@ def read_users(fn):
         cookie_name='ai_tutors_cookies',
         cookie_key='cookie_key',
         cookie_expiry_days=1,
+        auto_hash=False
     )
     return config, authenticator
 

@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 from st_files_connection import FilesConnection
+import json
+from pinecone import Pinecone
+import os
 
 @st.cache_data
 def read_csv(fn):
@@ -72,10 +75,12 @@ def ask_for_overwrite():
         st.rerun()
 
 def create_tutor(fn, new_name, new_descr, new_intro, 
-                 new_instr, new_guide, api_key, 
+                 new_instr, file_paths, new_guide, api_key, 
                  availability, user_email, overwrite=False):
     # Read current csv
     df = read_csv(fn)
+
+    file_paths_json = json.dumps(file_paths)
 
     # Create a new row as a DataFrame
     new_row = pd.DataFrame({
@@ -83,10 +88,11 @@ def create_tutor(fn, new_name, new_descr, new_intro,
         "Description": [new_descr],
         "Introduction": [new_intro],
         "Instructions": [new_instr], 
+        "Knowledge Files": [file_paths_json],  # Store as JSON string
         "Guidelines": [new_guide],
         "Creator Email": [user_email],
         "API Key": [api_key],
-        "Availability": [availability]
+        "Availability": [availability],
     })
     
     if overwrite:
@@ -101,8 +107,16 @@ def create_tutor(fn, new_name, new_descr, new_intro,
     
     # Write the updated DataFrame to a CSV file
     write_csv(fn, df)
+
+    delete_embeddings(new_name)
     
     return df
+
+def delete_embeddings(tool_name):
+    index_name = tool_name.lower().replace(' ','-')
+    pc = Pinecone(api_key=os.environ["PC_API_KEY"])
+    if index_name in pc.list_indexes().names():
+        pc.delete_index(index_name)
 
 def delete_tutor(fn, tool_name):
     # Read current csv
@@ -142,5 +156,6 @@ def reset_build(reset_banner=False):
     st.session_state["api_key"] = None
     st.session_state["overwrite_dialog"] = False
     st.session_state["overwrite"] = False
+    st.session_state["knowledge_file_paths"] = []
     if reset_banner:
         st.session_state["banner"] = None
