@@ -4,6 +4,7 @@ from st_files_connection import FilesConnection
 import json
 from pinecone import Pinecone
 import os
+import ast
 
 @st.cache_data
 def read_csv(fn):
@@ -48,17 +49,26 @@ def get_creator_email(df, tool_name):
     else:
         return None    
 
+def str_to_list(string):
+    try:
+        return ast.literal_eval(string)
+    except:
+        return []
+
 def available_tutors(df):
     # Return a list of tuples of all tools available (Name, Description, Creator Email)
     names = df["Name"].values
     descriptions = df["Description"].values
     creator_emails = df["Creator Email"].values
+    grades = [str_to_list(gr) for gr in df["Grades"].values]
+    subjects = [str_to_list(sub) for sub in df["Subjects"].values]
+    
     availability = df["Availability"].values
     api_key = df["API Key"].values
     api_key = [k if type(k) is str else None for k in api_key]
 
     # Zip names, descriptions, and creator emails into a list of tuples
-    return list(zip(names, descriptions, creator_emails, availability, api_key))
+    return list(zip(names, descriptions, creator_emails, grades, subjects, availability, api_key))
 
 # Dialog window to ask for overwrite priveleges
 @st.dialog("Overwrite")
@@ -75,7 +85,8 @@ def ask_for_overwrite():
         st.rerun()
 
 def create_tutor(fn, new_name, new_descr, new_intro, 
-                 new_instr, file_paths, new_guide, api_key, 
+                 new_instr, file_paths, new_guide, 
+                 selected_grades, selected_subjects, api_key, 
                  availability, user_email, overwrite=False):
     # Read current csv
     df = read_csv(fn)
@@ -90,6 +101,8 @@ def create_tutor(fn, new_name, new_descr, new_intro,
         "Instructions": [new_instr], 
         "Knowledge Files": [file_paths_json],  # Store as JSON string
         "Guidelines": [new_guide],
+        "Grades": [selected_grades],
+        "Subjects": [selected_subjects],
         "Creator Email": [user_email],
         "API Key": [api_key],
         "Availability": [availability],

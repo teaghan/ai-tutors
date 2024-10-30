@@ -22,6 +22,12 @@ menu()
 reset_chatbot()
 reset_build(reset_banner=True)
 
+
+# Multi-select filters for Grades and Subjects
+grades = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
+subjects = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
+            'Social Studies', 'Languages', 'Career Education']
+
 # Create tabs for Public Tutors and My Tutors
 if st.session_state.role == 'student':
     tab1, tab2 = st.tabs(["Access Code", "Public Tutors"])
@@ -31,12 +37,22 @@ if st.session_state.role == 'student':
             use_code(st.session_state.df_access_codes, st.session_state.df_tutors, access_code)
     # Display Public Tutors in tab2 
     with tab2:
-        display_tools(show_all=True)
+        with st.expander("Filters"):
+            col1, col2 = st.columns(2)
+            selected_grades = col1.multiselect("Display Grades:", options=grades, default=grades)
+            selected_subjects = col2.multiselect("Display Subjects:", options=subjects, default=subjects)
+        display_tools(show_all=True,
+                      selected_grades=selected_grades, selected_subjects=selected_subjects)
 else:
     tab1, tab2 = st.tabs(["Public Tutors", "My Tutors"])
     # Display Public Tutors in tab1 (includes all tools, regardless of the creator)
     with tab1:
-        display_tools(show_all=True, allow_copy=True, access_codes=True)
+        with st.expander("Filters"):
+            col1, col2 = st.columns(2)
+            selected_grades = col1.multiselect("Display Grades:", options=grades, default=grades)
+            selected_subjects = col2.multiselect("Display Subjects:", options=subjects, default=subjects)
+        display_tools(show_all=True, allow_copy=True, access_codes=True, 
+                      selected_grades=selected_grades, selected_subjects=selected_subjects)
 
     # Display My Tutors in tab2 (only tools created by the current user)
     with tab2:

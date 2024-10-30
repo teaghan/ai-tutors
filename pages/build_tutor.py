@@ -150,6 +150,19 @@ with col2:
         st.markdown(new_guide)
 st.markdown('---')
 
+# Tags Selection
+st.header('Tags')
+st.markdown('Select a set of tags/categories for your tutor. This will help users more easily find relevant tools.')
+
+# Multi-select for Grades
+grades = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
+selected_grades = st.multiselect("Select Grades:", options=grades, default=grades)
+
+# Multi-select for Subjects
+subjects = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
+            'Social Studies', 'Languages', 'Career Education']
+selected_subjects = st.multiselect("Select Subjects:", options=subjects, default=subjects)
+st.markdown('---')
 
 st.header('Availability')
 availability_list = ['Open to Public', 'Available for Viewing', 'Completely Private']
@@ -281,7 +294,9 @@ if test_button or create_button or st.session_state["overwrite"]:
                                                             new_name, new_descr, 
                                                             new_intro, new_instr, 
                                                             knowledge_file_paths,
-                                                            new_guide, api_key, availability, 
+                                                            new_guide, 
+                                                            selected_grades, selected_subjects,
+                                                            api_key, availability, 
                                                             st.session_state.user_email,
                                                             overwrite=st.session_state["overwrite"])
                 st.session_state["banner"] = 'success'
