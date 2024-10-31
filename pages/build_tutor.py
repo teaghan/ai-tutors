@@ -154,14 +154,21 @@ st.markdown('---')
 st.header('Tags')
 st.markdown('Select a set of tags/categories for your tutor. This will help users more easily find relevant tools.')
 
-# Multi-select for Grades
 grades = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
-selected_grades = st.multiselect("Select Grades:", options=grades, default=grades)
-
-# Multi-select for Subjects
 subjects = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
             'Social Studies', 'Languages', 'Career Education']
-selected_subjects = st.multiselect("Select Subjects:", options=subjects, default=subjects)
+
+if 'grades' in st.session_state:
+    default_grades = st.session_state["grades"]
+else:
+    default_grades = grades
+if 'subjects' in st.session_state:
+    default_subjects = st.session_state["subjects"]
+else:
+    default_subjects = subjects
+
+st.session_state["grades"] = st.multiselect("Select Grades:", options=grades, default=default_grades)
+st.session_state["subjects"] = st.multiselect("Select Subjects:", options=subjects, default=default_subjects)
 st.markdown('---')
 
 st.header('Availability')
@@ -295,7 +302,7 @@ if test_button or create_button or st.session_state["overwrite"]:
                                                             new_intro, new_instr, 
                                                             knowledge_file_paths,
                                                             new_guide, 
-                                                            selected_grades, selected_subjects,
+                                                            st.session_state["grades"], st.session_state["subjects"],
                                                             api_key, availability, 
                                                             st.session_state.user_email,
                                                             overwrite=st.session_state["overwrite"])

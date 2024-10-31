@@ -47,13 +47,19 @@ def get_creator_email(df, tool_name):
     if not selected_row.empty:
         return selected_row["Creator Email"].values[0]
     else:
-        return None    
+        return None  
 
 def str_to_list(string):
     try:
         return ast.literal_eval(string)
     except:
         return []
+
+def get_tags(df, tool_name):
+    selected_row = df[df["Name"] == tool_name]
+    grades = str_to_list(selected_row["Grades"].values[0])
+    subjects = str_to_list(selected_row["Subjects"].values[0])
+    return grades, subjects  
 
 def available_tutors(df):
     # Return a list of tuples of all tools available (Name, Description, Creator Email)
@@ -170,5 +176,8 @@ def reset_build(reset_banner=False):
     st.session_state["overwrite_dialog"] = False
     st.session_state["overwrite"] = False
     st.session_state["knowledge_file_paths"] = []
+    st.session_state["grades"] = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
+    st.session_state["subjects"] = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
+                                    'Social Studies', 'Languages', 'Career Education']
     if reset_banner:
         st.session_state["banner"] = None
