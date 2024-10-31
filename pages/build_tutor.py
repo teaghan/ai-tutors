@@ -9,10 +9,6 @@ from utils.session import check_state
 from utils.cookies import update_tutor_cookies
 from utils.knowledge_files import drop_files, save_files, load_file_to_temp
 
-# Clear memory
-#import gc
-#gc.collect()
-
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 # Page Title
@@ -48,7 +44,7 @@ def scroll_to(element_id):
 df_tutors = st.session_state["df_tutors"]
 
 # Example tool
-example_name = 'Socratic STEM Tutor'
+example_name = 'Mathematical Reasoning Tutor'#'Socratic STEM Tutor'
 _, example_introduction, example_instructions, example_guidelines, _, _ = select_instructions(df_tutors, tool_name=example_name)
 
 with st.expander("**How it all works**"):
@@ -67,7 +63,6 @@ To ensure the tutor behaves as you'd like, you need to define two things:
 2. **Guidelines** for the moderator: The moderator will check each tutor response against these guidelines. 
 If even one guideline is violated, the response will be marked as "inappropriate" and corrected.
     ''')
-
 
 # User inputs with examples provided
 st.header('Tool Name')
@@ -153,22 +148,13 @@ st.markdown('---')
 # Tags Selection
 st.header('Tags')
 st.markdown('Select a set of tags/categories for your tutor. This will help users more easily find relevant tools.')
-
 grades = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
 subjects = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
             'Social Studies', 'Languages', 'Career Education']
-
-if 'grades' in st.session_state:
-    default_grades = st.session_state["grades"]
-else:
-    default_grades = grades
-if 'subjects' in st.session_state:
-    default_subjects = st.session_state["subjects"]
-else:
-    default_subjects = subjects
-
-st.session_state["grades"] = st.multiselect("Select Grades:", options=grades, default=default_grades)
-st.session_state["subjects"] = st.multiselect("Select Subjects:", options=subjects, default=default_subjects)
+selected_grades = st.multiselect("Select Grades:", options=grades, 
+                                 default=st.session_state.get("grades", grades))
+selected_subjects = st.multiselect("Select Subjects:", options=subjects, 
+                                   default=st.session_state.get("subjects", subjects))
 st.markdown('---')
 
 st.header('Availability')
@@ -269,6 +255,8 @@ if api_key:
 st.session_state["tutor_test_mode"] = True
 
 if test_button or create_button or st.session_state["overwrite"]:
+    st.session_state["grades"] = selected_grades
+    st.session_state["subjects"] = selected_subjects
     if new_name and new_descr and new_intro and new_instr and new_guide:
         if test_button:
             st.session_state["banner"] = None
