@@ -57,15 +57,15 @@ with st.expander("Tips for Interacting with AI Tutors"):
     - "Can you help me identify the key themes in the poem I’m analyzing?"
     - "Can you help me understand how the digestive system breaks down food in the human body?"
 - To help type math symbols, use these keyboard shortcuts:
-    - Addition (+): Use the + key.
-    - Subtraction (-): Use the - key.
-    - Multiplication (×): Use the * key.
-    - Division (÷): Use the / key.
-    - Equals (=): Use the = key.
-    - Greater Than (>): Use the > key.
-    - Less Than (<): Use the < key.
-    - Powers (3²): Use the ^ symbol followed by the exponent. For example: 3^2
-    - Square Root: Type \sqrt{} using the {} brackets to enclose the number. For example: \sqrt{4}
+    - Addition (+): Use the `+` key.
+    - Subtraction (-): Use the `-` key.
+    - Multiplication (×): Use the `*` key.
+    - Division (÷): Use the `/` key.
+    - Equals (=): Use the `=` key.
+    - Greater Than (>): Use the `>` key.
+    - Less Than (<): Use the `<` key.
+    - Powers (3²): Use the `^` symbol followed by the exponent. For example: `3^2`
+    - Square Root: Type `\sqrt{}` using the `{}` brackets to enclose the number. For example: `\sqrt{4}`
     """)
 
 
@@ -218,3 +218,6 @@ if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
 if st.session_state["tutor_test_mode"]:
     if st.button(r"Edit AI Tutor", type="primary"):
         st.switch_page("pages/build_tutor.py")
+
+#if 'debug_msg' in st.session_state:
+#    st.write(st.session_state["debug_msg"])

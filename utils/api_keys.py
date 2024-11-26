@@ -62,6 +62,7 @@ def check_openai_api_key(api_key):
         client.models.list()
     except openai.AuthenticationError:
         return False
+        #return True
     else:
         return True
 
