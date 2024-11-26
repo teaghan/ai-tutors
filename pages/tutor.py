@@ -45,6 +45,17 @@ with st.expander("Tips for Interacting with AI Tutors"):
 - Ask the tutor to explain how things work instead of just giving the solution.
 - Be as clear as you can when asking questions to get the best help.
 - If you're still unsure, don’t be afraid to ask more questions.
+- Example Prompts to Get Started:
+    - "How can I improve the structure of my research paper on renewable energy?"
+    - "Can you help me with problem 6 on the attached assignment?
+    - "What role does the Sun play in the water cycle?"
+    - "What techniques can I use to make my descriptive writing more engaging?"
+    - "Can you help me understand how photosynthesis works?"
+    - "How can I break down a word problem in math to understand what it’s asking?"
+    - "Can you guide me through how to compare and contrast two characters from a novel?"
+    - "Can you help me understand how simple machines like levers and pulleys make work easier?"
+    - "Can you help me identify the key themes in the poem I’m analyzing?"
+    - "Can you help me understand how the digestive system breaks down food in the human body?"
 - To help type math symbols, use these keyboard shortcuts:
     - Addition (+): Use the + key.
     - Subtraction (-): Use the - key.
@@ -55,15 +66,6 @@ with st.expander("Tips for Interacting with AI Tutors"):
     - Less Than (<): Use the < key.
     - Powers (3²): Use the ^ symbol followed by the exponent. For example: 3^2
     - Square Root: Type \sqrt{} using the {} brackets to enclose the number. For example: \sqrt{4}
-- Example Prompts to Get Started:
-    - "What role does the Sun play in the water cycle?"
-    - "Can you help me understand how photosynthesis works?"
-    - "Can you help me with problem 6 on the attached assignment?
-    - "Can you help me understand how the states of matter change from one form to another?"
-    - "How do living organisms adapt to their environment to survive?"
-    - "Can you help me understand how simple machines like levers and pulleys make work easier?"
-    - "Can you help me understand how the movement of tectonic plates causes earthquakes?"
-    - "Can you help me understand how the digestive system breaks down food in the human body?"
     """)
 
 
