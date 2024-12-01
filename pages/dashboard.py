@@ -33,7 +33,7 @@ def delete_this_key(username, name):
         delete_key(username, name)
     return inside_fn
 
-tab1, tab2, tab3 = st.tabs(["API Keys", "Manage My Tutors", "Access Codes"])
+tab1, tab2, tab3, tab4 = st.tabs(["API Keys", "Manage My Tutors", "Access Codes", "Profile"])
 
 # API functionality
 with tab1:
@@ -108,3 +108,7 @@ with tab2:
 
 with tab3:
     display_codes()
+
+with tab4:
+    if st.button(f"Change Password", use_container_width=True):
+        st.switch_page("pages/change_password.py")

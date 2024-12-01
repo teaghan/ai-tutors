@@ -15,6 +15,9 @@ check_state()
 reset_chatbot()
 reset_build(reset_banner=True)
 
+if 'password_sent' in st.session_state and st.session_state['password_sent']:
+    st.success('New password sent to your email!')
+
 # Creating a login widget
 try:
     st.session_state.authenticator.login(fields={'Username':'Email'})
@@ -26,9 +29,18 @@ if st.session_state['authentication_status']:
     # Username and email are the same
     st.session_state.user_email = st.session_state.username
     update_cookies()
-    # Go to teacher dashboard
-    st.switch_page("pages/dashboard.py")
+    if 'password_sent' in st.session_state and st.session_state['password_sent']:
+        st.session_state['password_sent'] = False
+        st.switch_page("pages/change_password.py")
+    else:
+        # Go to teacher dashboard
+        st.switch_page("pages/dashboard.py")
 elif st.session_state['authentication_status'] is False:
     st.error('Username/password is incorrect')
 elif st.session_state['authentication_status'] is None:
     st.warning('Please enter your username and password')
+
+_, _, _, col4 = st.columns(4)
+with col4:
+    if st.button(f"Forgot Password?", use_container_width=True):
+        st.switch_page("pages/forgot_password.py")
