@@ -180,6 +180,8 @@ st.markdown('---')
 if availability!='Available for Viewing':
 
     st.header('API Key')
+    st.markdown('Select an API Key for your tutor **OR** add a new one.')
+
     # Load API key for this users email
     api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
 
@@ -192,21 +194,34 @@ if availability!='Available for Viewing':
         index = api_key_options.index(st.session_state["api_key"])
     else:
         index = 0
-    col1, col2, col3 = st.columns(3)
+    col1, col3 = st.columns((2,1))
     with col1:
         api_key_name = st.selectbox('API Key', api_key_name_options, 
                                     label_visibility='hidden', index=index)
-    with col2:
+    with col3:
         st.text("")
         st.text("")
         if st.button("Add New Key", use_container_width=True):
             add_key()
-    with col3:
-        st.text("")
-        st.text("")
-        if st.button("Manage API Keys", use_container_width=True):
-            # Go to teacher dashboard
-            st.switch_page("pages/dashboard.py")
+    #with col3:
+    #    st.text("")
+    #    st.text("")
+    #    if st.button("Manage API Keys", use_container_width=True):
+    #        # Go to teacher dashboard
+    #        st.switch_page("pages/dashboard.py")
+    with st.expander("How to obtain an API key?"):
+        st.markdown("""
+            Follow these steps to get your API key from OpenAI:
+
+            1. **Sign up with OpenAI**: [Create an account](https://platform.openai.com/signup) if you don’t already have one (you don't need ChatGPT-Plus).
+            2. **Set your monthly usage limit**: After signing in, navigate to your [usage settings](https://platform.openai.com/usage) 
+            to define how much you're willing to spend each month to avoid unexpected charges.            
+            3. **Purchase tokens**: Pre-purchase tokens or set up a billing plan under the [billing section](https://platform.openai.com/settings/organization/billing/overview).
+            4. **Create a new API key**: Visit the [API keys section](https://platform.openai.com/api-keys) and click "Create new secret key." 
+            
+            Once your API key is generated, copy it and paste it in the "Add New Key" section below.
+        """)
+
     # Select API Key from list
     api_key = api_key_options[api_key_name_options.index(api_key_name)]
     if api_key is None:

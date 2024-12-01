@@ -7,7 +7,7 @@ from utils.menu import menu
 from utils.api_keys import ask_for_api
 from utils.session import check_state
 from utils.cookies import cookies_to_session, update_tutor_cookies
-from utils.save_to_html import download_chat_button
+from utils.save_to_html import download_chat_button, escape_markdown
 import time
 from tempfile import NamedTemporaryFile
 
@@ -162,7 +162,10 @@ if len(st.session_state.messages)>0:
         st.session_state.stream_init_msg = False
     else:
         for msg in st.session_state.messages:
-            st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
+            if msg["role"] == "user":
+                st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(escape_markdown(rf"{msg["content"]}"))
+            else:
+                st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
 # The following code is for saving the messages to a html file.
 col1, col2, col3 = st.columns(3)
@@ -201,7 +204,7 @@ if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
         prompt_full = prompt
 
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.chat_message("user", avatar=avatar["user"]).write(prompt)
+    st.chat_message("user", avatar=avatar["user"]).markdown(escape_markdown(prompt))
 
     response = st.session_state.tutor_llm.get_response(prompt_full)
     st.session_state.messages.append({"role": "assistant", "content": rf"{response}"})    

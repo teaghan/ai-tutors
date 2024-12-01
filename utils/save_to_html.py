@@ -8,6 +8,25 @@ import streamlit as st
 import random
 from datetime import datetime
 
+def escape_markdown(text: str) -> str:
+    """
+    Escapes markdown special characters in text to prevent markdown formatting.
+    
+    Args:
+        text (str): The text to escape
+        
+    Returns:
+        str: Text with markdown special characters escaped
+    """
+    # List of markdown special characters that need escaping
+    markdown_chars = ['\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '#', '+', 
+                     '-', '.', '!', '|', '>', '~', '^']
+    
+    escaped_text = text
+    for char in markdown_chars:
+        escaped_text = escaped_text.replace(char, '\\' + char)
+    return escaped_text
+
 def convert_messages_to_markdown(messages: List[Dict[str, str]], code_block_indent='                 ') -> str:
     """
     Converts a list of message dictionaries to a markdown-formatted string.
@@ -26,9 +45,12 @@ def convert_messages_to_markdown(messages: List[Dict[str, str]], code_block_inde
     markdown_lines = []
     for message in messages:
         role = message['role']
-        if role=='assistant':
-            role='tutor'
-        content = message['content']
+        if role == 'assistant':
+            role = 'tutor'
+            content = message['content']
+        else:
+            # Escape markdown special characters in user messages
+            content = escape_markdown(message['content'])
         indented_content = _indent_content(content, code_block_indent)
         markdown_lines.append(f"###*{role.capitalize()}*:\n{indented_content}\n")
     return '\n\n'.join(markdown_lines)
