@@ -8,6 +8,7 @@ from utils.api_keys import ask_for_api
 from utils.session import check_state
 from utils.cookies import cookies_to_session, update_tutor_cookies
 from utils.save_to_html import download_chat_button, escape_markdown
+from utils.calculator import equation_creator
 import time
 from tempfile import NamedTemporaryFile
 
@@ -197,7 +198,9 @@ if not st.session_state.model_loaded:
         st.session_state.model_loaded = True
         st.session_state["model_loads"] += 0
 
-if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
+#with st.container():
+prompt = st.chat_input()
+if (prompt) and (not st.session_state.invalid_filetype):
     if st.session_state.drop_file is True and len(prompt_f)>10:
         prompt_full = prompt + f'\n\n## Uploaded file contents:\n\n{prompt_f}'
     else:
@@ -217,6 +220,12 @@ if (prompt := st.chat_input()) and (not st.session_state.invalid_filetype):
                 time.sleep(0.02)
     
     st.rerun()
+
+# Equation Creator
+#col1, col2, col3 = st.columns(3)
+with st.sidebar:#col1:
+    with st.expander("Equation Creator"):
+        equation_creator()
 
 if st.session_state["tutor_test_mode"]:
     if st.button(r"Edit AI Tutor", type="primary"):
