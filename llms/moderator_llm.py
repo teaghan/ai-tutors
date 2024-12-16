@@ -1,11 +1,7 @@
 import streamlit as st
 
-import os
 from llama_index.core.llms import ChatMessage
-from llama_index.llms.openai import OpenAI
-from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from transformers import OpenAIGPTTokenizerFast
+from llama_index.core.prompts import PromptTemplate
 
 def load_text_file(file_path):
     return open(file_path, 'r').read()
@@ -49,7 +45,7 @@ class ContentModerator:
         system_prompt = f'''
 # Your Task
 
-Based on the moderation guidelines below, your task is to determine if the response from the AI Tutor is appropriate given the prior conversation.
+Based on the moderation guidelines below, your task is to determine if the response from the AI assistant is appropriate given the prior conversation.
 
 # Response Format 
 
@@ -124,9 +120,11 @@ Based on the moderation guidelines, is the following AI response appropriate giv
         system_prompt = f'''
 # Your Task
 
-You will be given a chat history between a student and an AI tutor along with the moderator's feedback on why the response was inappropriate.
+You will be given a chat history between a student and an AI assistant along with the moderator's feedback on why the response was inappropriate.
 
 Your task is to take this feedback and create a new response that is appropriate for the conversation and aligns with the moderator guidelines.
+
+The corrected response should CONTINUE THE CONVERSATION BETWEEN THE USER AND ASSISTANT in a way that is aligned with the system instructions and guidelines.
 
 # Response Format 
 
@@ -137,15 +135,16 @@ Respond ONLY WITH THE CORRECTED RESPONSE.
 
         # Combine the chat history, AI response, and moderator feedback into a correction prompt
         correction_prompt = f"""
-The AI tutor gave the following inappropriate response(s) in this conversation:
+The AI assistant gave the following inappropriate response(s) in this conversation:
 
 ### **Chat History**:\n\n{chat_history}\n\n
-### **AI Response(s)**:\n\n{ai_response}\n\n
+### **AI Assistant's Response(s)**:\n\n{ai_response}\n\n
 ### **Moderator's Feedback(s)**:\n\n{moderator_feedback}
 
 Your Task: Provide a corrected response based on the full conversation that is appropriate according to the moderation guidelines. Respond ONLY WITH THE CORRECTED RESPONSE.
         """
 
+        '''
         message_history = [
             ChatMessage(role="system", content=system_prompt),
             ChatMessage(role="user", content=correction_prompt)
@@ -156,6 +155,15 @@ Your Task: Provide a corrected response based on the full conversation that is a
             corrected_response = self.chat_engine.chat(correction_prompt, message_history[:-1]).response
         else:
             corrected_response = self.llm.chat(message_history).message.content
+        '''
+
+        prompt = PromptTemplate(system_prompt+'\n\n'+correction_prompt)
+
+        # Run the correction prompt through the corrector LLM
+        if self.chat_engine is not None:
+            corrected_response = self.chat_engine.predict(prompt)
+        else:
+            corrected_response = self.llm.predict(prompt)
 
         # Optionally remove quotes if they exist in the output
         if corrected_response.startswith('"') and corrected_response.endswith('"'):
