@@ -116,7 +116,7 @@ with col2:
     with st.popover("Preview Instructions in Markdown", use_container_width=True):
         st.markdown(new_instr)
 st.markdown('---')
-
+'''
 st.header('Knowledge Files (optional)')
 if 'knowledge_file_paths' in st.session_state:
     value = st.session_state["knowledge_file_paths"]
@@ -128,7 +128,9 @@ dropped_files, existing_file_paths_chosen = drop_files(col1, value)
 if dropped_files and st.session_state["banner"] != 'success':
     st.warning('Note that these new files will not be added to your tutor for testing until you have saved your tutor using the "Launch Tutor" button below.')
 st.markdown('---')
-
+'''
+dropped_files = []
+existing_file_paths_chosen = []
 st.header('Guidelines')
 if st.session_state["tutor_test_mode"]:
     value = st.session_state["guidelines"]
@@ -294,7 +296,8 @@ if test_button or create_button or st.session_state["overwrite"]:
         if not name_exists or st.session_state["overwrite"]:
             if create_button or st.session_state["overwrite"]:
 
-                knowledge_file_paths = save_files(new_name, dropped_files)
+                if len(dropped_files)>0:
+                    knowledge_file_paths = save_files(new_name, dropped_files)
                 if len(existing_file_paths_chosen)>0:
                     # Include existing paths
                     knowledge_file_paths = knowledge_file_paths + existing_file_paths_chosen
