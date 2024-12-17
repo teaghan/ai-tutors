@@ -298,6 +298,8 @@ if test_button or create_button or st.session_state["overwrite"]:
 
                 if len(dropped_files)>0:
                     knowledge_file_paths = save_files(new_name, dropped_files)
+                else:
+                    knowledge_file_paths = []
                 if len(existing_file_paths_chosen)>0:
                     # Include existing paths
                     knowledge_file_paths = knowledge_file_paths + existing_file_paths_chosen
