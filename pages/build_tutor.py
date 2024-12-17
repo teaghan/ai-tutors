@@ -116,19 +116,19 @@ with col2:
     with st.popover("Preview Instructions in Markdown", use_container_width=True):
         st.markdown(new_instr)
 st.markdown('---')
-'''
-st.header('Knowledge Files (optional)')
-if 'knowledge_file_paths' in st.session_state:
-    value = st.session_state["knowledge_file_paths"]
-else:
-    value = []
-st.markdown('Include any knowledge files that will be useful for the tutor to use as background information.')
-col1, col2 = st.columns(2)
-dropped_files, existing_file_paths_chosen = drop_files(col1, value)
-if dropped_files and st.session_state["banner"] != 'success':
-    st.warning('Note that these new files will not be added to your tutor for testing until you have saved your tutor using the "Launch Tutor" button below.')
-st.markdown('---')
-'''
+
+#st.header('Knowledge Files (optional)')
+#if 'knowledge_file_paths' in st.session_state:
+#    value = st.session_state["knowledge_file_paths"]
+#else:
+#    value = []
+#st.markdown('Include any knowledge files that will be useful for the tutor to use as background information.')
+#col1, col2 = st.columns(2)
+#dropped_files, existing_file_paths_chosen = drop_files(col1, value)
+#if dropped_files and st.session_state["banner"] != 'success':
+#    st.warning('Note that these new files will not be added to your tutor for testing until you have saved your tutor using the "Launch Tutor" button below.')
+#st.markdown('---')
+
 dropped_files = []
 existing_file_paths_chosen = []
 st.header('Guidelines')
