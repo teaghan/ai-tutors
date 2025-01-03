@@ -1,9 +1,9 @@
 
-import streamlit as st
+from streamlit.components.v1 import html
 
 def enforce_https():
     """Redirect HTTP requests to HTTPS using JavaScript."""
-    st.markdown(
+    html(
         """
         <script>
         if (window.location.protocol !== 'https:') {
