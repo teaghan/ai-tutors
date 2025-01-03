@@ -7,6 +7,9 @@ st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsaf
 
 from utils.session import check_state, user_reset
 from utils.cookies import update_cookies
+from utils.https import enforce_https
+
+enforce_https()
 
 # If necessary, load tutor data, user data, and load cookies
 check_state()
