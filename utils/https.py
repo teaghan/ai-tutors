@@ -10,6 +10,4 @@ def enforce_https():
             window.location.href = window.location.href.replace('http://', 'https://');
         }
         </script>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
