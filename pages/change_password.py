@@ -1,9 +1,7 @@
 import streamlit as st
 from utils.menu import menu
-from streamlit_authenticator.utilities import RegisterError
 from utils.user_data import save_yaml
 from utils.session import check_state
-from utils.cookies import update_cookies
 
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)

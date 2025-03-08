@@ -1,13 +1,8 @@
 import streamlit as st
-import os
+
 from llms.chatbot_llm import AITutor
 from llms.moderator_llm import ContentModerator
-
-from llama_index.llms.openai import OpenAI
-
-@st.cache_resource
-def get_llm(openai_api_key):
-    return OpenAI(model='gpt-4o-mini', temperature=0.4, api_key=openai_api_key)
+from llms.models import get_llm
 
 class TutorChain:
     def __init__(self, 
@@ -15,16 +10,14 @@ class TutorChain:
                  instructions, 
                  guidelines,
                  introduction, 
-                 knowledge_file_paths,
-                 openai_api_key):
+                 knowledge_file_paths):
 
         # Initialize the OpenAI LLM
-        llm_model = get_llm(openai_api_key)
-        #llm_model.api_key = openai_api_key
+        llm_model = get_llm()
         
         # Initialize the tutor with the LLM and instructions
         self.tutor_llm = AITutor(llm_model, tool_name, instructions, introduction, 
-                                 knowledge_file_paths, openai_api_key=openai_api_key)
+                                 knowledge_file_paths)
         self.init_request = self.tutor_llm.message_history[-1].content
 
         # Create an instance of the ContentModerator class

@@ -6,7 +6,7 @@ from pinecone import Pinecone
 import os
 import ast
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def read_csv(fn):
     # Create connection object and retrieve file contents.
     conn = st.connection('s3', type=FilesConnection, ttl=0)
@@ -33,11 +33,8 @@ def select_instructions(df, tool_name):
         instructions = selected_row["Instructions"].values[0]
         guidelines = selected_row["Guidelines"].values[0]
         availability = selected_row["Availability"].values[0]
-        api_key = selected_row["API Key"].values[0]
-        if type(api_key)!=str:
-            api_key = None
 
-        return description, introduction, instructions, guidelines, availability, api_key
+        return description, introduction, instructions, guidelines, availability
     else:
         print(f"No entry found for {tool_name}")
 
@@ -70,11 +67,9 @@ def available_tutors(df):
     subjects = [str_to_list(sub) for sub in df["Subjects"].values]
     
     availability = df["Availability"].values
-    api_key = df["API Key"].values
-    api_key = [k if type(k) is str else None for k in api_key]
 
     # Zip names, descriptions, and creator emails into a list of tuples
-    return list(zip(names, descriptions, creator_emails, grades, subjects, availability, api_key))
+    return list(zip(names, descriptions, creator_emails, grades, subjects, availability))
 
 # Dialog window to ask for overwrite priveleges
 @st.dialog("Overwrite")
@@ -92,7 +87,7 @@ def ask_for_overwrite():
 
 def create_tutor(fn, new_name, new_descr, new_intro, 
                  new_instr, file_paths, new_guide, 
-                 selected_grades, selected_subjects, api_key, 
+                 selected_grades, selected_subjects, 
                  availability, user_email, overwrite=False):
     # Read current csv
     df = read_csv(fn)
@@ -110,7 +105,6 @@ def create_tutor(fn, new_name, new_descr, new_intro,
         "Grades": [selected_grades],
         "Subjects": [selected_subjects],
         "Creator Email": [user_email],
-        "API Key": [api_key],
         "Availability": [availability],
     })
     
@@ -153,7 +147,7 @@ def delete_tutor(fn, tool_name):
         st.error(f"Failed to remove '{tool_name}'.")
         return df
 
-# Dialog window to confirm and delete API key
+# Dialog window to confirm and delete Tutor
 @st.dialog("Delete Tutor")
 def delete_tutor_confirm(tutor_name):
     st.markdown(f"Are you sure you want to delete the tutor '{tutor_name}'?")
@@ -164,20 +158,3 @@ def delete_tutor_confirm(tutor_name):
         st.rerun()
     if st.button(f"Cancel", use_container_width=True):
         st.rerun()
-
-def reset_build(reset_banner=False):
-    st.session_state["tool name"] = None
-    st.session_state["description"] = None
-    st.session_state["introduction"] = None
-    st.session_state["instructions"] = None
-    st.session_state["guidelines"] = None
-    st.session_state["availability"] = None
-    st.session_state["api_key"] = None
-    st.session_state["overwrite_dialog"] = False
-    st.session_state["overwrite"] = False
-    st.session_state["knowledge_file_paths"] = []
-    st.session_state["grades"] = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
-    st.session_state["subjects"] = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
-                                    'Social Studies', 'Languages', 'Career Education']
-    if reset_banner:
-        st.session_state["banner"] = None

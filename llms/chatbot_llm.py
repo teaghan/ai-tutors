@@ -1,28 +1,18 @@
-from llama_index.core.llms import ChatMessage
-from llama_index.llms.openai import OpenAI
-from utils.knowledge_files import load_file_to_temp
 import streamlit as st
 import os
+from llama_index.core.llms import ChatMessage
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
-from llama_index.embeddings.openai import OpenAIEmbedding
-from transformers import OpenAIGPTTokenizerFast
-
-from pinecone import Pinecone, ServerlessSpec
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.vector_stores.pinecone import PineconeVectorStore
+from pinecone import Pinecone, ServerlessSpec
 from s3fs import S3FileSystem
+
+from utils.knowledge_files import load_file_to_temp
+from llms.models import get_embed
 
 def load_text_file(file_path):
     return open(file_path, 'r').read()
-
-@st.cache_resource
-def get_embed(model_name):
-    return OpenAIEmbedding(model=model_name)
-
-@st.cache_resource
-def get_tokenizer(hf_token):
-    return OpenAIGPTTokenizerFast.from_pretrained("openai-community/openai-gpt", token=hf_token)
 
 @st.cache_resource
 def get_chat_engine_old(openai_api_key, knowledge_file_paths):
@@ -135,7 +125,7 @@ class AITutor:
         get_message_history(): Returns the history of messages in the conversation.
     """
 
-    def __init__(self, llm_model, tool_name, instructions, introduction, knowledge_file_paths, openai_api_key=None, display_system=False):
+    def __init__(self, llm_model, tool_name, instructions, introduction, knowledge_file_paths, display_system=False):
         self.llm = llm_model
         self.message_history = []
         self.introduction = introduction
@@ -157,7 +147,7 @@ class AITutor:
 
         if len(knowledge_file_paths)>0:
             
-            index = get_chat_engine(tool_name, openai_api_key, knowledge_file_paths)
+            index = get_chat_engine(tool_name, knowledge_file_paths)
 
             self.chat_engine = index.as_chat_engine(chat_mode="best", 
                                                     llm=self.llm)#, 

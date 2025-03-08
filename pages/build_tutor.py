@@ -1,23 +1,22 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from utils.tutor_data import select_instructions, create_tutor, ask_for_overwrite, reset_build, delete_embeddings
-from utils.user_data import get_api_keys
-from utils.api_keys import add_key
+from utils.tutor_data import select_instructions, create_tutor, ask_for_overwrite, delete_embeddings
 from utils.menu import menu
-from utils.chatbot_setup import reset_chatbot
+from utils.session import reset_chatbot, reset_build
 from utils.session import check_state
-from utils.cookies import update_tutor_cookies
 from utils.knowledge_files import drop_files, save_files, load_file_to_temp
+from utils.styling import scroll_to
+
+example_name = 'Mathematical Reasoning Tutor'
+markdown_previews = False
 
 # Page configuration
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 # Page Title
 st.markdown("<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;Build an AI Tutor</h1>", unsafe_allow_html=True)
 
-# If necessary, load tutor data, user data, and load cookies
-check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email', 'tool name', 
-                  'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'], 
-            check_user=True)
+# If necessary, load tutor data, user data, etc.
+check_state(check_user=True)
 
 # Display page buttons
 menu()
@@ -32,20 +31,11 @@ if "tutor_test_mode" not in st.session_state:
 if not st.session_state.tutor_test_mode:
     reset_build()
 
-def scroll_to(element_id):
-    components.html(f'''
-        <script>
-            var element = window.parent.document.getElementById("{element_id}");
-            element.scrollIntoView({{behavior: 'smooth'}});
-        </script>
-    '''.encode())
-
 # Load existing tutor data
 df_tutors = st.session_state["df_tutors"]
 
 # Example tool
-example_name = 'Mathematical Reasoning Tutor'#'Socratic STEM Tutor'
-_, example_introduction, example_instructions, example_guidelines, _, _ = select_instructions(df_tutors, tool_name=example_name)
+_, example_introduction, example_instructions, example_guidelines, _ = select_instructions(df_tutors, tool_name=example_name)
 
 with st.expander("**How it all works**"):
     st.markdown('''
@@ -95,10 +85,11 @@ with st.expander("Example Introduction"):
     st.text(example_introduction)
 new_intro = st.text_area("Introduction:", height=400,
                          value=value)
-col1, col2 = st.columns(2)
-with col2:
-    with st.popover("Preview Introduction in Markdown", use_container_width=True):
-        st.markdown(new_intro)
+if markdown_previews:
+    col1, col2 = st.columns(2)
+    with col2:
+        with st.popover("Preview Introduction in Markdown", use_container_width=True):
+            st.markdown(new_intro)
 st.markdown('---')
 
 st.header('Instructions')
@@ -111,10 +102,11 @@ with st.expander("Example Instructions"):
     st.text(example_instructions)
 new_instr = st.text_area("Instructions:", height=400,
                          value=value)
-col1, col2 = st.columns(2)
-with col2:
-    with st.popover("Preview Instructions in Markdown", use_container_width=True):
-        st.markdown(new_instr)
+if markdown_previews:
+    col1, col2 = st.columns(2)
+    with col2:
+        with st.popover("Preview Instructions in Markdown", use_container_width=True):
+            st.markdown(new_instr)
 st.markdown('---')
 
 #st.header('Knowledge Files (optional)')
@@ -141,10 +133,11 @@ with st.expander("Example Guidelines"):
     st.text(example_guidelines)
 new_guide = st.text_area("Guidelines:", height=400,
                          value=value)
-col1, col2 = st.columns(2)
-with col2:
-    with st.popover("Preview Guidelines in Markdown", use_container_width=True):
-        st.markdown(new_guide)
+if markdown_previews:
+    col1, col2 = st.columns(2)
+    with col2:
+        with st.popover("Preview Guidelines in Markdown", use_container_width=True):
+            st.markdown(new_guide)
 st.markdown('---')
 
 # Tags Selection
@@ -160,7 +153,7 @@ selected_subjects = st.multiselect("Select Subjects:", options=subjects,
 st.markdown('---')
 
 st.header('Availability')
-availability_list = ['Open to Public', 'Available for Viewing', 'Completely Private']
+availability_list = ['Open to Public', 'Private']
 if st.session_state["tutor_test_mode"] and (st.session_state["availability"] is not None):
     index = availability_list.index(st.session_state["availability"])
 else:
@@ -170,69 +163,12 @@ availability = st.selectbox('Availability', availability_list,
 
 with st.expander("**What does this mean?**"):
     st.markdown('''
-- **Open to Public**: Your tutor will be accessible to any student. *Note: This means the interactions will use your API Key*.
+- **Public**: Your tutor will be accessible to any student.
 
-- **Available for Viewing**: Other teachers can view and interact with your tutor using their own API Key. They can also copy and customize their own version of your tutor.
-
-- **Completely Private**: Only you can access your tutor. It will remain private unless you change its availability or generate an access code for your students.
+- **Private**: Only those who you share the tutor with will be able to access it.
     ''')
 
 st.markdown('---')
-
-if availability!='Available for Viewing':
-
-    st.header('API Key')
-    st.markdown('Select an API Key for your tutor **OR** add a new one.')
-
-    # Load API key for this users email
-    api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
-
-    api_key_name_options = ['None']
-    api_key_options = [None]
-    if api_keys is not None:
-        api_key_name_options = api_key_name_options+[nk[0] for nk in api_keys]
-        api_key_options = api_key_options+[nk[1] for nk in api_keys]
-    if st.session_state["tutor_test_mode"]:
-        index = api_key_options.index(st.session_state["api_key"])
-    else:
-        index = 0
-    col1, col3 = st.columns((2,1))
-    with col1:
-        api_key_name = st.selectbox('API Key', api_key_name_options, 
-                                    label_visibility='hidden', index=index)
-    with col3:
-        st.text("")
-        st.text("")
-        if st.button("Add New Key", use_container_width=True):
-            add_key()
-    #with col3:
-    #    st.text("")
-    #    st.text("")
-    #    if st.button("Manage API Keys", use_container_width=True):
-    #        # Go to teacher dashboard
-    #        st.switch_page("pages/dashboard.py")
-    with st.expander("How to obtain an API key?"):
-        st.markdown("""
-            Follow these steps to get your API key from OpenAI:
-
-            1. **Sign up with OpenAI**: [Create an account](https://platform.openai.com/signup) if you don’t already have one (you don't need ChatGPT-Plus).
-            2. **Set your monthly usage limit**: After signing in, navigate to your [usage settings](https://platform.openai.com/usage) 
-            to define how much you're willing to spend each month to avoid unexpected charges.            
-            3. **Purchase tokens**: Pre-purchase tokens or set up a billing plan under the [billing section](https://platform.openai.com/settings/organization/billing/overview).
-            4. **Create a new API key**: Visit the [API keys section](https://platform.openai.com/api-keys) and click "Create new secret key." 
-            
-            Once your API key is generated, copy it and paste it in the "Add New Key" section below.
-        """)
-
-    # Select API Key from list
-    api_key = api_key_options[api_key_name_options.index(api_key_name)]
-    if api_key is None:
-        st.warning('Without an API Key, your tutor will not be usable!')
-    st.markdown('---')
-else:
-    api_key_name = 'None'
-    api_key = None
-
 
 st.header('Finalize', anchor='bottom')
 
@@ -267,8 +203,6 @@ if new_guide:
     st.session_state["guidelines"] = new_guide
 if availability:
     st.session_state["availability"] = availability
-if api_key:
-    st.session_state["api_key"] = api_key
 st.session_state["tutor_test_mode"] = True
 
 if test_button or create_button or st.session_state["overwrite"]:
@@ -279,7 +213,6 @@ if test_button or create_button or st.session_state["overwrite"]:
             st.session_state["banner"] = None
             st.session_state["tutor_test_mode"] = True
             reset_chatbot()
-            update_tutor_cookies()
             delete_embeddings(new_name)
             st.switch_page('pages/tutor.py')
             
@@ -311,16 +244,14 @@ if test_button or create_button or st.session_state["overwrite"]:
                                                             knowledge_file_paths,
                                                             new_guide, 
                                                             st.session_state["grades"], st.session_state["subjects"],
-                                                            api_key, availability, 
+                                                            availability, 
                                                             st.session_state.user_email,
                                                             overwrite=st.session_state["overwrite"])
                 st.session_state["banner"] = 'success'
                 st.session_state["overwrite"] = False
                 reset_chatbot()
-                update_tutor_cookies()
     else:
         st.session_state["banner"] = 'missing info'
-        update_tutor_cookies()
     st.rerun()
 
 if st.session_state["banner"] is not None:
@@ -336,9 +267,7 @@ if st.session_state["banner"] is not None:
                 st.session_state["instructions"] = new_instr
                 st.session_state["guidelines"] = new_guide
                 st.session_state["availability"] = availability
-                st.session_state["api_key"] = api_key
                 st.session_state["tutor_test_mode"] = False
-                update_tutor_cookies()
                 st.switch_page('pages/tutor.py')
     elif st.session_state["banner"] == 'missing info':
         st.error("Please provide all of the info below.")

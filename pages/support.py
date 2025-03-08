@@ -1,7 +1,9 @@
 import streamlit as st
 from utils.menu import menu
 from utils.session import check_state
-import time
+import smtplib
+from email.mime.text import MIMEText
+import os
 
 # Streamlit page configuration
 st.set_page_config(
@@ -12,62 +14,58 @@ st.set_page_config(
 )
 
 check_state()
-
-# Custom CSS for enhanced visuals
-st.markdown(
-    """
-    <style>
-    .centered-title {
-        text-align: center;
-        color: #2F4F4F;
-        font-size: 48px;
-        font-weight: bold;
-        margin-top: 50px;
-    }
-    .contact-card {
-        background-color: #E0F2E9;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        text-align: left;
-        margin-top: 30px;
-    }
-    .email-link {
-        color: #A8D5BA;
-        text-decoration: none;
-        font-weight: bold;
-    }
-    .email-link:hover {
-        color: #2F4F4F;
-    }
-    ul {
-        text-align: left;
-        margin: auto;
-        width: 80%;
-    }
-    </style>
-    """, unsafe_allow_html=True
-)
+menu()
 
 # Title
 st.markdown("<h1 style='text-align: center; color: grey;'>Support</h1>", unsafe_allow_html=True)
 
-# Display menu buttons
-menu()
+def send_email(subject, body, sender, sender_password, recipient):
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = recipient
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
+       smtp_server.login(sender, sender_password)
+       smtp_server.sendmail(sender, recipient, msg.as_string())
+    print("Message sent!")
 
-cols = st.columns((1.4, 2, 1.4))
+def send_email_support(user_email, message):
+    sender = 'build.ai.tutors@gmail.com'
+    recipient = 'build.ai.tutors@gmail.com'
+    sender_password = os.environ['EMAIL_PASSWORD']
 
-with cols[1]:
-    # Contact Information Section
-    st.markdown(
-        """
-        <div class='contact-card'>
-            <p>Email us at <a href='mailto:build.ai.tutors@gmail.com' class='email-link'>build.ai.tutors@gmail.com</a> if you:</p>
-            <ul>
-                <li>Have a question</li>
-                <li>Want to request a feature</li>
-                <li>Found a bug to report</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True
-    )
+    subject = 'AI Tutors: User Support'
+    #message = message.replace('\n', '<br>')
+    body = 'User: ' + user_email + '\n\n' + message
+    send_email(subject, body, sender, sender_password, recipient)
+
+with st.columns((1, 6, 1))[1]:
+
+    with st.container(border=True):
+
+        request = st.empty()
+        text = st.empty()
+        email = st.empty()
+        button = st.empty()
+
+        request.markdown("""
+Please send us a message if you:
+- Have a question
+- Want to request a feature
+- Found a bug to report
+        """)
+        user_email = email.text_input("Email (optional):", value="", placeholder='Your email address')
+        message = text.text_area("Message:", value="", height=100, 
+                                 key="1", placeholder='👋 All questions and suggestions welcome here!',  label_visibility='collapsed')
+
+        if button.button("Send Message 📤", type="primary", use_container_width=True):
+            with st.spinner("Sending message..."):
+                send_email_support(user_email, message)
+            if user_email:
+                st.success("Message sent! We'll be back in touch soon 📨")
+            else:
+                st.success("Message sent! Thank you for your feedback 🙏")
+            request.empty()
+            email.empty()
+            text.empty()
+            button.empty()

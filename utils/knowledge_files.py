@@ -8,7 +8,7 @@ from st_files_connection import FilesConnection
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def load_file_to_temp(fn):
     # Create a connection object to S3
     conn = st.connection('s3', type=FilesConnection, ttl=0)

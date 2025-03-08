@@ -1,13 +1,12 @@
 import streamlit as st
-from utils.cookies import update_cookies
 from utils.session import check_state
-import time
+from utils.styling import stream_lines
 
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
-st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
-# If necessary, load tutor data, user data, and load cookies
 check_state()
+
+st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
 # Text to be displayed with newlines
 text = (
@@ -16,35 +15,24 @@ text = (
     'Deliver personalized learning\n'
     'Build it your own way'
 )
-
-# Function to stream text letter by letter
-def stream_text(text):
-    sentence = ""
-    for letter in text:
-        sentence += letter
-        yield sentence.replace("\n", "<br>")  # Use <br> for new lines
-cols = st.columns((2, 2, 1.4))
+cols = st.columns((1.4, 2, 1.5))
 if "slow_write_teacher" not in st.session_state:
     st.session_state["slow_write_teacher"] = True
-if st.session_state.slow_write_teacher:
-    time.sleep(0.5)
-    with cols[1]:
-        with st.empty():
-            for sentence in stream_text(text):
-                st.markdown(f"<h4 style='color: grey;'>{sentence}</h4>", unsafe_allow_html=True)
-                time.sleep(0.01)
-    st.session_state.slow_write_teacher = False
-else:
-    cols[1].markdown(f"<h4 style='color: grey;'>{text.replace("\n", "<br>")}</h4>", unsafe_allow_html=True)
-
+with cols[1]:
+    stream_lines(
+        text=text,
+        pause_time=0.01,
+        initial_pause=0.5,
+        slow_write=st.session_state["slow_write_teacher"],
+        center=True
+    )
+    st.session_state["slow_write_teacher"] = False
 st.markdown("----")
 
 col1, col2, col3 = st.columns((1.4, 1.5, 1.5))
 with col2:
-    if st.button(f"Login", use_container_width=True):
+    if st.button(f"Login", type="primary", use_container_width=True):
         st.session_state['authentication_status'] = None
-        update_cookies()
         st.switch_page("pages/login.py")
     if st.button(f"Sign Up", use_container_width=True):
-        update_cookies()
         st.switch_page("pages/signup.py")

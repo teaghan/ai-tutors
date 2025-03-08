@@ -12,7 +12,6 @@ def send_email(subject, body, sender, sender_password, recipient):
        smtp_server.sendmail(sender, recipient, msg.as_string())
     print("Message sent!")
 
-
 def send_email_forgot_password(recipient, recipient_password):
     sender = 'build.ai.tutors@gmail.com'
     sender_password = os.environ['EMAIL_PASSWORD']

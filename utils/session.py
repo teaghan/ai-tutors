@@ -1,9 +1,10 @@
 import streamlit as st
+from streamlit_authenticator.utilities import LoginError 
+
 from utils.tutor_data import read_csv
 from utils.user_data import read_users
-from utils.cookies import cookies_to_session, clear_cookies#, NEW_CM
-#from streamlit_cookies_controller import CookieController
-import time
+from utils.styling import load_style
+from utils.memory_manager import initialize_memory_and_heartbeat, update_session_activity
 
 def load_data():
     # Load tutor data file or cached data
@@ -23,55 +24,69 @@ def user_reset():
     st.session_state.user_email = None
     st.session_state.username = None
     st.session_state.role = None
-    return
 
-def check_state(check_user=False, keys=None, reset_cookies=False, cookies_working=False):
+def check_state(check_user=False, reset_chat=False, rebuild=False, reset_banner=False):
+    # Load styling
+    load_style()
+
+    # Reset info
+    if reset_chat:
+        reset_chatbot()
+    if rebuild:
+        reset_build(reset_banner=reset_banner)
+
+    # Start periodic cleanup only once per session
+    if "cleanup_initialized" not in st.session_state:
+        # Initialize memory and heartbeat managers
+        initialize_memory_and_heartbeat()
+
+    # Update activity on any user interaction
+    update_session_activity()
 
     # Load tutor and user data
     load_data()
 
-    if cookies_working:
-        if "cookie_manager" not in st.session_state:
-            cookie_manager = NEW_CM()#CookieController()
-            st.session_state['cookie_manager'] = cookie_manager
-            #st.session_state["authenticator"].login()
-        if reset_cookies:
-            clear_cookies()
-
-    #st.write(st.session_state['cookie_manager'].cookies)
-
     # Set user login info
     if "user_email" not in st.session_state:
         user_reset()
-
-    ## Collect cookies
-    if cookies_working:
-        if keys is None:
-            cookies_to_session()
-        else:
-            cookies_to_session(keys=keys)
     
     # Check if user is signed in
     if check_user:
         if st.session_state.authentication_status is None:
             st.switch_page("main.py")
-            #login()
-
-    return 
-
-from streamlit_authenticator.utilities import LoginError 
-from utils.cookies import update_cookies
 
 def login():
+    
     # Creating a login widget
     try:
         st.session_state.authenticator.login(fields={'Username':'Email'})
     except LoginError as e:
         st.error(e)
+    
     # Authenticating user
     if st.session_state['authentication_status']:
         # Username and email are the same
         st.session_state.user_email = st.session_state.username
-        update_cookies()
     else:
         st.switch_page("main.py")
+
+def reset_build(reset_banner=False):
+    st.session_state["tool name"] = None
+    st.session_state["description"] = None
+    st.session_state["introduction"] = None
+    st.session_state["instructions"] = None
+    st.session_state["guidelines"] = None
+    st.session_state["availability"] = None
+    st.session_state["overwrite_dialog"] = False
+    st.session_state["overwrite"] = False
+    st.session_state["knowledge_file_paths"] = []
+    st.session_state["grades"] = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
+    st.session_state["subjects"] = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
+                                    'Social Studies', 'Languages', 'Career Education']
+    if reset_banner:
+        st.session_state["banner"] = None
+
+def reset_chatbot():
+    st.session_state.model_loaded = False
+    st.session_state["messages"] = []
+    st.session_state.stream_init_msg = True

@@ -6,10 +6,10 @@ showSidebarNavigation = false
 toolbarMode = "minimal"
 
 [theme]
-primaryColor="#A8D5BA"  # Pale green
-backgroundColor="#FFFFFF"  # White
+primaryColor="#007435"  # Forest Green
+backgroundColor="#F5FFF9"  # Light Green
 secondaryBackgroundColor="#E0F2E9"  # Lighter pale green
-textColor="#2F4F4F"  # Dark greenish-gray for contrast
+textColor="#003418"  # Dark Green
 font="sans serif"
 
 [ui]

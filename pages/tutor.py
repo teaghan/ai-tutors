@@ -4,13 +4,13 @@ from llama_index.core import SimpleDirectoryReader
 
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
-from utils.api_keys import ask_for_api
 from utils.session import check_state
-from utils.cookies import cookies_to_session, update_tutor_cookies
 from utils.save_to_html import download_chat_button, escape_markdown
 from utils.calculator import equation_creator
 import time
 from tempfile import NamedTemporaryFile
+
+pause_time_between_chars = 0.01
 
 if "tool name" in st.session_state:
     page_name = st.session_state["tool name"]
@@ -20,10 +20,8 @@ else:
 st.set_page_config(page_title=page_name, page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
                     layout="wide")
 
-# If necessary, load tutor data, user data, and load cookies
-check_state(keys=['authentication_status', 'user_email', 'role', 'username', 'email',
-                  'tool name', 'introduction', 'instructions', 'guidelines', 'api_key', 'tutor_test_mode'],
-                  check_user=True)
+# If necessary, load tutor data, user data, etc.
+check_state(check_user=True)
 
 menu()
 
@@ -37,34 +35,23 @@ st.markdown(f"<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;{st
 # Display Tutor Profile Image
 tutor_image_url = "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_avatar1.png"
 col1, col2, col3 = st.columns(3)
-col2.image(tutor_image_url, use_column_width=True)
+col2.image(tutor_image_url, use_container_width=True)
 
 # Interaction Tips
-with st.expander("Tips for Interacting with AI Tutors"):
+with st.expander("💡 **Tips** for interacting with AI Tutors"):
     st.markdown("""
-- Try to learn and understand the material, not just to get the answers.
 - Ask the tutor to explain how things work instead of just giving the solution.
 - Be as clear as you can when asking questions to get the best help.
-- If you're still unsure, don’t be afraid to ask more questions.
-- Example Prompts to Get Started:
-    - "How can I improve the structure of my research paper on renewable energy?"
+- If you're still unsure, don't be afraid to ask more questions.
+- **Example prompts** to get started:
     - "Can you help me with problem 6 on the attached assignment?
     - "What role does the Sun play in the water cycle?"
-    - "What techniques can I use to make my descriptive writing more engaging?"
     - "Can you help me understand how photosynthesis works?"
-    - "How can I break down a word problem in math to understand what it’s asking?"
     - "Can you guide me through how to compare and contrast two characters from a novel?"
-    - "Can you help me understand how simple machines like levers and pulleys make work easier?"
-    - "Can you help me identify the key themes in the poem I’m analyzing?"
-    - "Can you help me understand how the digestive system breaks down food in the human body?"
-- To help type math symbols, use these keyboard shortcuts:
-    - Addition (+): Use the `+` key.
-    - Subtraction (-): Use the `-` key.
+    - "Can you help me identify the key themes in the poem I'm analyzing?"
+- To help type **math symbols**, use these keyboard shortcuts:
     - Multiplication (×): Use the `*` key.
     - Division (÷): Use the `/` key.
-    - Equals (=): Use the `=` key.
-    - Greater Than (>): Use the `>` key.
-    - Less Than (<): Use the `<` key.
     - Powers (3²): Use the `^` symbol followed by the exponent. For example: `3^2`
     - Square Root: Type `\sqrt{}` using the `{}` brackets to enclose the number. For example: `\sqrt{4}`
     """)
@@ -159,7 +146,7 @@ if len(st.session_state.messages)>0:
             with st.empty():
                 for char in stream_text(intro_msg):
                     st.markdown(char)
-                    time.sleep(0.02)
+                    time.sleep(pause_time_between_chars)
         st.session_state.stream_init_msg = False
     else:
         for msg in st.session_state.messages:
@@ -175,11 +162,6 @@ download_chat_session = download_chat_button(st.session_state["tool name"], st.s
 if st.session_state.invalid_filetype:
     st.warning(f"Invalid file(s): {', '.join(invalid_files)}. Please remove this one and upload an accepted file type.")
 
-api_key = st.session_state["api_key"]
-if api_key is None:
-    ask_for_api()
-
-
 # Load model
 if not st.session_state.model_loaded:
     with st.spinner('Loading...'):
@@ -188,8 +170,7 @@ if not st.session_state.model_loaded:
                                                    st.session_state["instructions"],
                                                    st.session_state["guidelines"],
                                                    st.session_state["introduction"],
-                                                   st.session_state["knowledge_file_paths"],
-                                                   api_key)
+                                                   st.session_state["knowledge_file_paths"])
         st.session_state.model_loads +=1
 
         init_request = st.session_state.tutor_llm.init_request        

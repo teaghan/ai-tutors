@@ -5,10 +5,10 @@ import numpy as np
 import random
 import string
 
-from utils.chatbot_setup import reset_chatbot
+from utils.session import reset_chatbot
 from utils.tutor_data import select_instructions, write_csv, read_csv
-from utils.user_data import get_api_keys
-from utils.cookies import update_tutor_cookies
+from utils.knowledge_files import get_file_paths
+from utils.config import domain_url
 
 def use_code(df_access, df_tutors, access_code):
     # Get the current date and time
@@ -20,7 +20,6 @@ def use_code(df_access, df_tutors, access_code):
     # Extract the Instructions and Guidelines for the selected row
     if not selected_row.empty:
         tool_name = selected_row["Name"].values[0]
-        api_key = selected_row["API Key"].values[0]
         creator_email = selected_row["Email"].values[0]
         end_datetime_str = selected_row["End Date"].values[0]  # This includes date and time
 
@@ -47,18 +46,17 @@ def use_code(df_access, df_tutors, access_code):
          st.session_state["introduction"],
          st.session_state["instructions"],
          st.session_state["guidelines"],
-         st.session_state["availability"], _) = select_instructions(df_tutors, tool_name=tool_name)
+         st.session_state["availability"]) = select_instructions(df_tutors, tool_name=tool_name)
+        st.session_state["knowledge_file_paths"] = get_file_paths(df_tutors, tool_name)
 
         st.session_state["tool name"] = tool_name
-        st.session_state["api_key"] = api_key
         st.session_state["tutor_test_mode"] = False
 
         # Launch new chat
         reset_chatbot()
-        update_tutor_cookies()
         st.switch_page('pages/tutor.py')
 
-# Dialog window to ask for single-use API Key
+# Dialog window to ask for single-use access code
 @st.dialog("Not Valid")
 def not_valid(error_msg='does not exit'):
     st.markdown(f"The access code you provided {error_msg}.")
@@ -67,11 +65,7 @@ def not_valid(error_msg='does not exit'):
 
 # Dialog window to generate access code
 @st.dialog("Access Code")
-def code_window(tool_name, api_key_name_options, api_key_options):
-    # Select API Key name
-    api_key_name = st.selectbox('API Key', api_key_name_options)
-    # Select API Key from list
-    api_key = api_key_options[api_key_name_options.index(api_key_name)]
+def code_window(tool_name):
 
     # Select duration
     duration_options = ['30 min', '1 hr', '2 hr', '12 hr', '24 hr', '48 hr', 'Indefinite']
@@ -89,17 +83,18 @@ def code_window(tool_name, api_key_name_options, api_key_options):
     # Generate 6-digit code
     access_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
-    if st.button(f"Create", use_container_width=True):
+    if st.button(f"Share", use_container_width=True, type='primary'):
         st.session_state.df_access_codes = add_code(st.session_state.access_codes_data_fn,
-                                                    access_code, tool_name, api_key, 
+                                                    access_code, tool_name, 
                                                     end_date, st.session_state.user_email)
         # Display success banner with the access code
-        st.success(f"Access code '{access_code}' created successfully!")
+        url = domain_url()
+        st.success(f"Access code **{access_code}** created successfully!\n\n You can also share [this link]({url}?code={access_code}) with students.")
         #st.rerun()
     if st.button(f"Close", use_container_width=True):
         st.rerun()
 
-def add_code(fn, access_code, tool_name, api_key, 
+def add_code(fn, access_code, tool_name, 
                 end_date, creator_email):
     # Load up to date csv
     df = read_csv(fn)
@@ -108,7 +103,6 @@ def add_code(fn, access_code, tool_name, api_key,
     new_row = pd.DataFrame({
         "Code": [access_code],
         "Name": [tool_name], 
-        "API Key": [api_key],
         "Email": [creator_email],
         "End Date": [end_date]
     })
@@ -121,41 +115,14 @@ def add_code(fn, access_code, tool_name, api_key,
     
     return df
 
-def select_apikey(df, tool_name):
-    # Select the row where the Name matches the given name
-    selected_row = df[df["Name"] == tool_name]
-    return selected_row["API Key"].values[0]
 
-@st.dialog("No API Key Available")
-def no_keys_window():
-    st.error("There is no API key assigned to this tutor and you have not added one. Please go back to your Dashboard to do so.")
-    if st.button(f"Close", use_container_width=True):
-        st.rerun()
 
 def create_code(tool_name):
 
-    # Load API key for this users email
-    api_keys = get_api_keys(st.session_state.users_config, st.session_state.user_email)
-    if api_keys is not None:
-        api_key_name_options = [nk[0] for nk in api_keys]
-        api_key_options = [nk[1] for nk in api_keys]
-    else:
-        api_key_name_options = []
-        api_key_options = []
+    # Select duration (or None)
+    code_window(tool_name)
 
-    # Find defaault API Key
-    default_api_key = select_apikey(st.session_state["df_tutors"], tool_name)
-    if default_api_key is not None:
-        api_key_name_options = ['Default'] + api_key_name_options
-        api_key_options = [default_api_key] + api_key_options
-
-    if len(api_key_options)==0:
-        no_keys_window()
-    else:
-        # Select duration (or None)
-        code_window(tool_name, api_key_name_options, api_key_options)
-
-# Dialog window to confirm and delete API key
+# Dialog window to confirm and delete access code
 @st.dialog("Delete Access Code")
 def delete_code(username, code):
     st.markdown(f"Are you sure you want to delete the code '{code}'?")
