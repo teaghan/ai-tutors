@@ -8,3 +8,4 @@ pinecone==5.3.1
 s3fs==2024.9.0
 Pygments==2.16.1
 markdown==3.7
+psutil==5.9.6
