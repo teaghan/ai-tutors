@@ -1,5 +1,6 @@
 streamlit==1.42.0
 streamlit-authenticator==0.4.1
+st-files-connection==0.1.0
 llama-index==0.12.2
 llama-index-llms-gemini==0.4.1
 llama-index-vector-stores-pinecone==0.4.1
