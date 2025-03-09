@@ -10,3 +10,4 @@ markdown==3.7
 psutil==5.9.6
 emoji==2.14.0
 chardet==5.2.0
+stripe==11.6.0

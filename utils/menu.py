@@ -20,10 +20,11 @@ def teacher_menu():
     st.sidebar.page_link("pages/dashboard.py", label="Dashboard")
     st.sidebar.page_link("pages/explore_tutors.py", label="Explore Tutors")
     st.sidebar.page_link("pages/build_tutor.py", label="Build a Tutor")
-    
+    st.sidebar.page_link("pages/buy_coffee.py", label="☕ Buy Me a Coffee")
+
     if st.session_state.role in ["admin"]:
         st.sidebar.page_link("pages/admin.py", label="Manage Tools")
-    st.sidebar.page_link("pages/support.py", label="Support")
+    st.sidebar.page_link("pages/support.py", label="Get Support")
     if st.sidebar.button('Logout', use_container_width=True, type='primary'):
         logout()
 
