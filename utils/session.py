@@ -86,7 +86,10 @@ def reset_build(reset_banner=False):
     if reset_banner:
         st.session_state["banner"] = None
 
+
 def reset_chatbot():
-    st.session_state.model_loaded = False
-    st.session_state["messages"] = []
-    st.session_state.stream_init_msg = True
+    st.session_state['model_loaded'] = False
+    st.session_state['messages'] = []
+    st.session_state['model_loads'] = 0
+    st.session_state['file_upload_key'] = 0
+    st.session_state['stream_init_msg'] = True

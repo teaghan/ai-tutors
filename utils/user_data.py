@@ -11,7 +11,8 @@ from streamlit_authenticator.utilities import (CredentialsError,
                                                ResetError,
                                                UpdateError)
 
-from st_files_connection import FilesConnection
+#from st_files_connection import FilesConnection
+import s3fs
 
 def hash_passwords(config):
     # Pre-hashing all plain text passwords once
@@ -20,10 +21,12 @@ def hash_passwords(config):
 @st.cache_data(show_spinner=False)
 def read_yaml(fn):
     # Create connection object and retrieve file contents.
-    conn = st.connection('s3', type=FilesConnection, ttl=0)
+    #conn = st.connection('s3', type=FilesConnection, ttl=0)
+    fs = s3fs.S3FileSystem(anon=False)
 
     # Read the YAML file from S3 as a string
-    yaml_content = conn.read(fn, input_format="text", ttl=0)
+    with fs.open(fn, 'r') as f:
+        yaml_content = f.read()
 
     # Return pandas dataframe
     return yaml.load(yaml_content, Loader=SafeLoader)
@@ -38,9 +41,6 @@ def read_users(fn):
     #hash_passwords(config)
     authenticator = stauth.Authenticate(
         config['credentials'],
-        cookie_name='ai_tutors_cookies',
-        cookie_key='cookie_key',
-        cookie_expiry_days=1,
         auto_hash=False
     )
     return config, authenticator
@@ -107,10 +107,11 @@ def save_yaml(fn, config):
     # Convert the config dictionary into a YAML string
     yaml_content = yaml.dump(config, default_flow_style=False)
 
-    conn = st.connection('s3', type=FilesConnection, ttl=0)
+    #conn = st.connection('s3', type=FilesConnection, ttl=0)
+    fs = s3fs.S3FileSystem(anon=False)
 
     # Open the connection and write the YAML content to S3
-    with conn.open(fn, "wt") as file:
+    with fs.open(fn, "wt") as file:
         file.write(yaml_content)
     # Reset cache so that new data gets loaded
     read_yaml.clear()

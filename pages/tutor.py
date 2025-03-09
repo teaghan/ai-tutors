@@ -1,14 +1,11 @@
-import os
 import streamlit as st
-from llama_index.core import SimpleDirectoryReader
-
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
-from utils.session import check_state
+from utils.session import check_state, reset_chatbot
 from utils.save_to_html import download_chat_button, escape_markdown
 from utils.calculator import equation_creator
 import time
-from tempfile import NamedTemporaryFile
+from utils.file_handler import extract_text_from_different_file_types
 
 pause_time_between_chars = 0.01
 
@@ -47,7 +44,6 @@ with st.expander("💡 **Tips** for interacting with AI Tutors"):
     - "Can you help me with problem 6 on the attached assignment?
     - "What role does the Sun play in the water cycle?"
     - "Can you help me understand how photosynthesis works?"
-    - "Can you guide me through how to compare and contrast two characters from a novel?"
     - "Can you help me identify the key themes in the poem I'm analyzing?"
 - To help type **math symbols**, use these keyboard shortcuts:
     - Multiplication (×): Use the `*` key.
@@ -63,69 +59,10 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = []
 if "model_loads" not in st.session_state:
     st.session_state["model_loads"] = 0
-
-# The following code handles dropping a file from the local computer
-if "drop_file" not in st.session_state:
-    st.session_state.drop_file = False
-if "zip_file" not in st.session_state:
-    st.session_state.zip_file = False
-if "invalid_filetype" not in st.session_state:
-    st.session_state.invalid_filetype = False
-drop_file = st.sidebar.button("Attach a file", 
-                      type="primary")
-if drop_file:
-    st.session_state.drop_file = True
-if "file_uploader_key" not in st.session_state:
-    st.session_state.file_uploader_key = 0
-if st.session_state.drop_file:
-    dropped_files = st.sidebar.file_uploader("Drop a file or multiple files (.txt, .rtf, .pdf, .csv, .docx)", 
-                                            accept_multiple_files=True,
-                                            key=st.session_state.file_uploader_key)
-    
-    # Validate file extensions
-    invalid_files = []
-    if dropped_files:
-        for uploaded_file in dropped_files:
-            extension = uploaded_file.name.split(".")[-1].lower()
-            if extension not in ['txt', 'rtf', 'pdf', 'csv', 'docx']:
-                invalid_files.append(uploaded_file.name)
-
-    # If invalid files are found, clear the uploaded files and show a warning
-    if invalid_files:
-        dropped_files = []  # Clear the uploaded files
-        st.session_state.invalid_filetype = True
-    else:
-        st.session_state.invalid_filetype = False
-
-    # Load file contents
-    prompt_f =""
-    if dropped_files != []:
-        # Collect temporary file paths
-        list_of_file_paths = []
-        if dropped_files:
-            for uploaded_file in dropped_files:
-                # Create a temporary file for each uploaded file
-                with NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as temp_file:
-                    temp_file.write(uploaded_file.getbuffer())  # Write uploaded content to temp file
-                    list_of_file_paths.append(temp_file.name)  # Store temp file path
-
-        # Use the temporary files with SimpleDirectoryReader
-        reader = SimpleDirectoryReader(input_files=list_of_file_paths)
-        documents = reader.load_data()
-
-        for doc in documents:
-            prompt_f += f'**Document File Name**: {doc.metadata['file_name']}'
-            if 'page_label' in doc.metadata:
-                prompt_f += f' Page {doc.metadata['page_label']}\n\n'
-            else:
-                prompt_f += '\n\n'
-            prompt_f += f'**Document Content**:\n\n {doc.text}\n\n'
-
-        # Clear temp data
-        for file_path in list_of_file_paths:
-            os.remove(file_path)
-else:
-    st.session_state.invalid_filetype = False
+if "file_upload_key" not in st.session_state:
+    st.session_state.file_upload_key = 0
+if "stream_init_msg" not in st.session_state:
+    st.session_state.stream_init_msg = True
 
 # Function to stream text letter by letter
 def stream_text(text):
@@ -133,9 +70,6 @@ def stream_text(text):
     for letter in text:
         sentence += letter
         yield sentence
-
-if "stream_init_msg" not in st.session_state:
-    st.session_state.stream_init_msg = True
 
 # Display conversation
 if len(st.session_state.messages)>0:
@@ -156,12 +90,21 @@ if len(st.session_state.messages)>0:
                 st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
 # The following code is for saving the messages to a html file.
-col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns((1.5, 0.5, 0.5))
 download_chat_session = download_chat_button(st.session_state["tool name"], st.session_state.messages, container=col3)
 
-if st.session_state.invalid_filetype:
-    st.warning(f"Invalid file(s): {', '.join(invalid_files)}. Please remove this one and upload an accepted file type.")
+# Button for resetting the chat.
+if col2.button("🔄 Reset Chat", use_container_width=True, help="Reset chat"):
+    reset_chatbot()
+    st.rerun()
 
+dropped_files = col1.file_uploader("File Uploader",
+            help="Drop your work/assignment here!", 
+            label_visibility='collapsed',
+            accept_multiple_files=True, 
+            type=["pdf", "png", "jpg", "docx", "csv", "txt", "rtf", "zip"],
+            key=f"file_upload_{st.session_state['file_upload_key']}"
+        )
 # Load model
 if not st.session_state.model_loaded:
     with st.spinner('Loading...'):
@@ -179,38 +122,53 @@ if not st.session_state.model_loaded:
         st.session_state.model_loaded = True
         st.session_state["model_loads"] += 0
 
-#with st.container():
 prompt = st.chat_input()
-if (prompt) and (not st.session_state.invalid_filetype):
-    if st.session_state.drop_file is True and len(prompt_f)>10:
-        prompt_full = prompt + f'\n\n## Uploaded file contents:\n\n{prompt_f}'
+if prompt:
+    # Process dropped files
+    processed_file_text = ''
+    if dropped_files:
+        for file in dropped_files:
+            try:
+                with st.spinner(f"Processing: {file.name}"):
+                    extracted_text = extract_text_from_different_file_types(file)
+                    processed_file_text += f"\n\n**{file.name}**\n\n{extracted_text}"
+            except Exception as e:
+                st.error(f"Error processing {file.name}: {str(e)}")
+                st.exception(e)
+        st.session_state["file_upload_key"] += 1
+
+    # Add the uploaded file contents to the prompt
+    if processed_file_text:
+        prompt_full = prompt + f'\n\n## Uploaded file contents:\n\n{processed_file_text}'
     else:
         prompt_full = prompt
 
+    print(prompt_full)
+
+    # Add the user's prompt to the conversation
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar=avatar["user"]).markdown(escape_markdown(prompt))
 
+    # Get the response from the tutor
     response = st.session_state.tutor_llm.get_response(prompt_full)
     st.session_state.messages.append({"role": "assistant", "content": rf"{response}"})    
     
-    #st.chat_message("assistant", avatar=avatar["assistant"]).markdown(rf"{response}")
+    # Display the response letter by letter
     with st.chat_message("assistant", avatar=avatar["assistant"]):
         with st.empty():
             for sentence in stream_text(response):
                 st.markdown(sentence)
                 time.sleep(0.02)
-    
+
+    # Re-run the app to update the conversation
     st.rerun()
 
 # Equation Creator
-#col1, col2, col3 = st.columns(3)
-with st.sidebar:#col1:
+with st.sidebar:
     with st.expander("Equation Creator"):
         equation_creator()
 
+# Edit AI Tutor
 if st.session_state["tutor_test_mode"]:
     if st.button(r"Edit AI Tutor", type="primary"):
         st.switch_page("pages/build_tutor.py")
-
-#if 'debug_msg' in st.session_state:
-#    st.write(st.session_state["debug_msg"])

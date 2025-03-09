@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 import numpy as np
 import random
 import string
@@ -12,7 +12,7 @@ from utils.config import domain_url
 
 def use_code(df_access, df_tutors, access_code):
     # Get the current date and time
-    cur_datetime = datetime.now()
+    cur_datetime = datetime.now(tz=timezone.utc)
 
     # Select the row where the Code matches the given code (case insensitive)
     selected_row = df_access[df_access["Code"].str.upper() == access_code.upper()]
@@ -29,7 +29,7 @@ def use_code(df_access, df_tutors, access_code):
         else:
             try:
                 # Convert the end date and time string to a datetime object
-                end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+                end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M')
             except ValueError:
                 not_valid(error_msg='has an invalid date/time format')
                 return
@@ -75,8 +75,8 @@ def code_window(tool_name):
 
     # Calculate end date-time
     if duration is not None:
-        end_date = datetime.now() + timedelta(hours=duration)
-        end_date = end_date.strftime('%Y-%m-%d %H:%M:%S')  # Format to save nicely in the CSV
+        end_date = datetime.now(tz=timezone.utc) + timedelta(hours=duration)
+        end_date = end_date.strftime('%Y-%m-%d %H:%M')  # Format to save nicely in the CSV
     else:
         end_date = np.nan  # Save as NaN if there is no end date
 
@@ -115,8 +115,6 @@ def add_code(fn, access_code, tool_name,
     
     return df
 
-
-
 def create_code(tool_name):
 
     # Select duration (or None)
@@ -151,9 +149,6 @@ def delete_access_code(df, username, code):
         return True
     else:
         return False
-    
-from datetime import datetime, timedelta
-import numpy as np
 
 # Dialog window to extend access code
 @st.dialog("Extend Access Code")
@@ -181,14 +176,14 @@ def extend_code(username, code):
 
     # If the current end date is NaN (no end date), set the current end date to now
     if pd.isna(current_end_date_str):
-        current_end_datetime = datetime.now()
+        current_end_datetime = datetime.now(tz=timezone.utc)
     else:
-        current_end_datetime = datetime.strptime(current_end_date_str, '%Y-%m-%d %H:%M:%S')
+        current_end_datetime = datetime.strptime(current_end_date_str, '%Y-%m-%d %H:%M')
 
     # Calculate the new end date based on the extension duration
     if extension_duration is not None:
         new_end_datetime = current_end_datetime + timedelta(hours=extension_duration)
-        new_end_date = new_end_datetime.strftime('%Y-%m-%d %H:%M:%S')  # Format as string for saving
+        new_end_date = new_end_datetime.strftime('%Y-%m-%d %H:%M')  # Format as string for saving
     else:
         new_end_date = np.nan  # Indefinite (no end date)
 
@@ -236,7 +231,7 @@ def display_codes():
         with col2:
             st.subheader('Name')
         with col3:
-            st.subheader('End Date')
+            st.subheader('Exp. Date (UTC)')
         with col4:
             st.subheader('')
             st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
@@ -249,7 +244,7 @@ def display_codes():
             with col1:
                 st.markdown("<div style='margin-bottom: 50px;'></div>", unsafe_allow_html=True)
                 #st.markdown(f"<div style='font-size:16px;'>{code}</div>", unsafe_allow_html=True)
-                st.markdown(code)
+                st.markdown(f'[{code}]({domain_url()}?code={code})')
             with col2:
                 st.markdown("<div style='margin-bottom: 50px;'></div>", unsafe_allow_html=True)
                 st.markdown(name)
@@ -260,9 +255,11 @@ def display_codes():
                 st.markdown(display_date)
             with col4:
                 st.markdown("<div style='margin-bottom: 35px;'></div>", unsafe_allow_html=True)
-                if st.button(f"Extend", key=f'{code}_extend', type="primary", on_click=extend_this_code(st.session_state.user_email, code)):
+                if st.button(f"Extend", key=f'{code}_extend', type="primary", use_container_width=True,
+                             on_click=extend_this_code(st.session_state.user_email, code)):
                     pass
             with col5:
                 st.markdown("<div style='margin-bottom: 35px;'></div>", unsafe_allow_html=True)
-                if st.button(f"Delete", key=f'{code}_delete', type="primary", on_click=delete_this_code(st.session_state.user_email, code)):
+                if st.button(f"Delete", key=f'{code}_delete', type="secondary", use_container_width=True,
+                              on_click=delete_this_code(st.session_state.user_email, code)):
                     pass

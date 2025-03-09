@@ -45,7 +45,7 @@ class TutorChain:
                 num_moderations += 1
                 responses.append(ai_response)
                 feedback.append(results['moderator_feedback'])
-                #st.markdown(results['moderator_feedback'])
+                print(results['moderator_feedback'])
 
                 if not results['moderated']:
                     # Response is good to go

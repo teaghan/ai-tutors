@@ -62,7 +62,7 @@ else:
     value = ""
 st.markdown(f'Provide a unique name for your tutor (for example, "{example_name}"):')
 new_name = st.text_input('Name:',
-                         value=value, label_visibility='hidden')
+                         value=value, label_visibility='collapsed')
 st.markdown('---')
 
 st.header('Description')
@@ -72,7 +72,7 @@ else:
     value = ""
 st.markdown('Describe your tutor in a sentence or two.')
 new_descr = st.text_input('Description:',
-                         value=value, label_visibility='hidden')
+                         value=value, label_visibility='collapsed')
 st.markdown('---')
 
 st.header('Introduction')
@@ -84,7 +84,7 @@ st.markdown('How will the tutor start the interaction?')
 with st.expander("Example Introduction"):
     st.text(example_introduction)
 new_intro = st.text_area("Introduction:", height=400,
-                         value=value)
+                         value=value, label_visibility='collapsed')
 if markdown_previews:
     col1, col2 = st.columns(2)
     with col2:
@@ -101,7 +101,7 @@ st.markdown('Define a set of instructions for your tutor to follow.')
 with st.expander("Example Instructions"):
     st.text(example_instructions)
 new_instr = st.text_area("Instructions:", height=400,
-                         value=value)
+                         value=value, label_visibility='collapsed')
 if markdown_previews:
     col1, col2 = st.columns(2)
     with col2:
@@ -132,7 +132,7 @@ st.markdown('Define a set of guidelines for the tutor moderator to follow (see t
 with st.expander("Example Guidelines"):
     st.text(example_guidelines)
 new_guide = st.text_area("Guidelines:", height=400,
-                         value=value)
+                         value=value, label_visibility='collapsed')
 if markdown_previews:
     col1, col2 = st.columns(2)
     with col2:
@@ -175,8 +175,9 @@ st.header('Finalize', anchor='bottom')
 col1, col2, col3 = st.columns(3)
 if st.session_state["banner"] != 'success':
     with col2: 
-        test_button = st.button("Test Interaction", use_container_width=True)
-        create_button = st.button("Launch Tutor", 
+        test_button = False
+        #test_button = st.button("Test Interaction", use_container_width=True)
+        create_button = st.button("Save Tutor", 
                                 type="primary", use_container_width=True)
 else:
     test_button = False

@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
-from st_files_connection import FilesConnection
+import s3fs
+
+#from st_files_connection import FilesConnection
 import json
 from pinecone import Pinecone
 import os
@@ -9,15 +11,15 @@ import ast
 @st.cache_data(show_spinner=False)
 def read_csv(fn):
     # Create connection object and retrieve file contents.
-    conn = st.connection('s3', type=FilesConnection, ttl=0)
-    # Return pandas dataframe
-    return conn.read(fn, input_format="csv", ttl=0) 
-    #return pd.read_csv(fn)
+    fs = s3fs.S3FileSystem(anon=False)
+    with fs.open(fn, 'rb') as f:
+        return pd.read_csv(f)
 
 def write_csv(fn, df):
     # Create connection object and write file contents.
-    conn = st.connection('s3', type=FilesConnection, ttl=0)
-    with conn.open(fn, "wt") as f:
+    
+    fs = s3fs.S3FileSystem(anon=False)
+    with fs.open(fn, 'wt') as f:
         df.to_csv(f, index=False)
     # Reset cache so that new data gets loaded
     read_csv.clear()

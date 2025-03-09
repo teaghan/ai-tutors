@@ -6,7 +6,7 @@ from utils.user_data import save_yaml
 st.set_page_config(page_title="AI Tutors", page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 st.markdown("<h1 style='text-align: center; color: grey;'>AI Tutors</h1>", unsafe_allow_html=True)
 
-# If necessary, load tutor data, user data, and load cookies
+# If necessary, load tutor data, user data, etc.
 check_state(check_user=False, reset_chat=True, rebuild=True, reset_banner=True)
 
 if 'password_sent' not in st.session_state:

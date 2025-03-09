@@ -1,5 +1,5 @@
 [server]
-maxUploadSize = 25
+maxUploadSize = 5
 
 [client]
 showSidebarNavigation = false
@@ -11,6 +11,3 @@ backgroundColor="#F5FFF9"  # Light Green
 secondaryBackgroundColor="#E0F2E9"  # Lighter pale green
 textColor="#003418"  # Dark Green
 font="sans serif"
-
-[ui]
-hideTopBar = true

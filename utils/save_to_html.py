@@ -279,9 +279,11 @@ def download_chat_button(tool_name, messages, container):
     file_name = f"ai_tutor_{''.join(str(random.randint(0, 9)) for _ in range(5))}.html"
 
     download_chat_session = container.download_button(
-        label="Download chat",
+        label="⬇️ Download Chat",
         data=session_html,
         file_name=file_name,
+        use_container_width=True,
+        type='primary',
         mime="text/markdown",
     )
     if download_chat_session:

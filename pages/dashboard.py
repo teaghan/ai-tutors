@@ -8,7 +8,7 @@ from utils.session import check_state
 # Streamlit info
 st.set_page_config(page_title='Dashboard', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", layout="wide")
 
-# If necessary, load tutor data, user data, and load cookies
+# If necessary, load tutor data, user data, etc.
 check_state(check_user=True, reset_chat=True, rebuild=True, reset_banner=True)
 
 # Title

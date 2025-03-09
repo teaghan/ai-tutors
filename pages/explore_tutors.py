@@ -2,13 +2,12 @@ import streamlit as st
 from utils.menu import menu
 from utils.display_tutors import display_tools
 from utils.access_codes import use_code
-from utils.session import reset_chatbot, reset_build
 from utils.session import check_state
 
 # Streamlit
 st.set_page_config(page_title='AI Tutors', page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png",  layout="wide")
 
-# If necessary, load tutor data, user data, and load cookies
+# If necessary, load tutor data, user data, etc.
 check_state(check_user=True, reset_chat=True, rebuild=True, reset_banner=True)
 
 # Title

@@ -2,17 +2,20 @@ import os
 import json
 
 import streamlit as st
-from st_files_connection import FilesConnection
+import s3fs
+
+#from st_files_connection import FilesConnection
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 
 @st.cache_data(show_spinner=False)
 def load_file_to_temp(fn):
     # Create a connection object to S3
-    conn = st.connection('s3', type=FilesConnection, ttl=0)
+    #conn = st.connection('s3', type=FilesConnection, ttl=0)
+    fs = s3fs.S3FileSystem(anon=False)
 
     # Open the remote file in binary read mode
-    with conn.open(fn, mode='rb') as remote_file:
+    with fs.open(fn, mode='rb') as remote_file:
 
         # Extract the file extension
         filename = Path(fn).name
@@ -32,12 +35,13 @@ def load_file_to_temp(fn):
 def save_files(tool_name, knowledge_files):
     data_dir = f'ai-tutors/knowledge-files/{tool_name}'
     # Create connection object and write file contents.
-    conn = st.connection('s3', type=FilesConnection, ttl=0)
+    #conn = st.connection('s3', type=FilesConnection, ttl=0)
+    fs = s3fs.S3FileSystem(anon=False)
 
     file_paths = []
     for knowledge_file in knowledge_files:
         file_path = os.path.join(data_dir,knowledge_file.name)
-        with conn.open(file_path, "wb") as f:
+        with fs.open(file_path, "wb") as f:
             f.write(knowledge_file.getvalue())
             file_paths.append(file_path)
 
