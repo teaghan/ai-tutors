@@ -25,11 +25,14 @@ def user_reset():
     st.session_state.username = None
     st.session_state.role = None
 
-def check_state(check_user=False, reset_chat=False, rebuild=False, reset_banner=False):
+def check_state(check_user=False, reset_chat=False, 
+                rebuild=False, reset_banner=False, reset_teacher=True):
     # Load styling
     load_style()
 
     # Reset info
+    if reset_teacher:
+        reset_teacher_email()
     if reset_chat:
         reset_chatbot()
     if rebuild:
@@ -86,6 +89,8 @@ def reset_build(reset_banner=False):
     if reset_banner:
         st.session_state["banner"] = None
 
+def reset_teacher_email():
+    st.session_state['teacher_email'] = None
 
 def reset_chatbot():
     st.session_state['model_loaded'] = False

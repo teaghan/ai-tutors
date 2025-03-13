@@ -20,7 +20,7 @@ def use_code(df_access, df_tutors, access_code):
     # Extract the Instructions and Guidelines for the selected row
     if not selected_row.empty:
         tool_name = selected_row["Name"].values[0]
-        creator_email = selected_row["Email"].values[0]
+        st.session_state['teacher_email'] = selected_row["Email"].values[0]
         end_datetime_str = selected_row["End Date"].values[0]  # This includes date and time
 
         # Check if the end date is NaN

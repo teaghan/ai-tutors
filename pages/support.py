@@ -1,9 +1,7 @@
 import streamlit as st
 from utils.menu import menu
 from utils.session import check_state
-import smtplib
-from email.mime.text import MIMEText
-import os
+from utils.emailing import send_email_support
 
 # Streamlit page configuration
 st.set_page_config(
@@ -19,25 +17,6 @@ menu()
 # Title
 st.markdown("<h1 style='text-align: center; color: grey;'>Support</h1>", unsafe_allow_html=True)
 
-def send_email(subject, body, sender, sender_password, recipient):
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['To'] = recipient
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
-       smtp_server.login(sender, sender_password)
-       smtp_server.sendmail(sender, recipient, msg.as_string())
-    print("Message sent!")
-
-def send_email_support(user_email, message):
-    sender = 'build.ai.tutors@gmail.com'
-    recipient = 'build.ai.tutors@gmail.com'
-    sender_password = os.environ['EMAIL_PASSWORD']
-
-    subject = 'AI Tutors: User Support'
-    #message = message.replace('\n', '<br>')
-    body = 'User: ' + user_email + '\n\n' + message
-    send_email(subject, body, sender, sender_password, recipient)
 
 with st.columns((1, 6, 1))[1]:
 

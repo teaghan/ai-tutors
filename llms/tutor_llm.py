@@ -17,6 +17,7 @@ class TutorChain:
         
         # Initialize the tutor with the LLM and instructions
         self.tutor_llm = AITutor(llm_model, tool_name, instructions, introduction, 
+                                 guidelines,
                                  knowledge_file_paths)
         self.init_request = self.tutor_llm.message_history[-1].content
 

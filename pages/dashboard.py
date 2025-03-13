@@ -19,11 +19,9 @@ menu()
 
 tab1, tab2, tab3 = st.tabs(["**Manage My Tutors**", "**Access Codes**", "**Profile**"])
 with tab1:
-    display_tools(show_all=False, user_display=True, allow_edit=True, allow_copy=True)
-
+    display_tools(show_all=False, user_display=True, allow_edit=True, allow_copy=True, access_codes=True)
 with tab2:
     display_codes()
-
 with tab3:
     if st.button(f"Change Password", use_container_width=True):
         st.switch_page("pages/change_password.py")

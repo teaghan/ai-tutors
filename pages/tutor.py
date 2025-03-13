@@ -2,7 +2,7 @@ import streamlit as st
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.session import check_state, reset_chatbot
-from utils.save_to_html import download_chat_button, escape_markdown
+from utils.save_to_html import download_chat_button, escape_markdown, send_chat_button
 from utils.calculator import equation_creator
 import time
 from utils.file_handler import extract_text_from_different_file_types
@@ -18,7 +18,7 @@ st.set_page_config(page_title=page_name, page_icon="https://raw.githubuserconten
                     layout="wide")
 
 # If necessary, load tutor data, user data, etc.
-check_state(check_user=True)
+check_state(check_user=True, reset_teacher=False)
 
 menu()
 
@@ -63,6 +63,8 @@ if "file_upload_key" not in st.session_state:
     st.session_state.file_upload_key = 0
 if "stream_init_msg" not in st.session_state:
     st.session_state.stream_init_msg = True
+if "teacher_email" not in st.session_state:
+    st.session_state.teacher_email = None
 
 # Function to stream text letter by letter
 def stream_text(text):
@@ -91,7 +93,10 @@ if len(st.session_state.messages)>0:
 
 # The following code is for saving the messages to a html file.
 col1, col2, col3 = st.columns((1.5, 0.5, 0.5))
-download_chat_session = download_chat_button(st.session_state["tool name"], st.session_state.messages, container=col3)
+download_chat_session = download_chat_button(st.session_state["tool name"], container=col3)
+
+if st.session_state.teacher_email:
+    send_chat_button(st.session_state["tool name"], container=col3)
 
 # Button for resetting the chat.
 if col2.button("🔄 Reset Chat", use_container_width=True, help="Reset chat"):

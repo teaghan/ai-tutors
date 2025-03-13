@@ -1,5 +1,5 @@
-# from https://github.com/tonypeng1/Personal-ChatGPT/blob/main/personal-chatgpt
-
+import tempfile
+import os
 import re
 from typing import List, Dict
 import markdown
@@ -7,6 +7,7 @@ from pygments.formatters import HtmlFormatter
 import streamlit as st
 import random
 from datetime import datetime
+from utils.emailing import send_email_chat
 
 def escape_markdown(text: str) -> str:
     """
@@ -273,7 +274,7 @@ def is_valid_file_name(file_name: str) -> bool:
                 file_name in reserved_words or
                 len(file_name) > 255)
 
-def download_chat_button(tool_name, messages, container):
+def download_chat_button(tool_name, container):
     session_md = convert_messages_to_markdown(st.session_state.messages)
     session_html = markdown_to_html(session_md, tool_name)
     file_name = f"ai_tutor_{''.join(str(random.randint(0, 9)) for _ in range(5))}.html"
@@ -283,7 +284,7 @@ def download_chat_button(tool_name, messages, container):
         data=session_html,
         file_name=file_name,
         use_container_width=True,
-        type='primary',
+        type='secondary',
         mime="text/markdown",
     )
     if download_chat_session:
@@ -291,3 +292,33 @@ def download_chat_button(tool_name, messages, container):
             st.success("Data saved.")
         else:
             st.error(f"The file name '{file_name}' is not a valid file name. File not saved!", icon="🚨")
+
+@st.dialog("Send to Teacher")
+def send_to_teacher(session_html):
+    st.markdown(f"Feel free to include some additional information for your teacher.")
+
+    student_name = st.text_input("Your name/nickname (recommended):", 
+                                placeholder='e.g. "MathNinja2024"')
+    message = st.text_area("A message to your teacher (optional):", 
+                          placeholder='e.g. "Can you please look over my chat and give me some feedback?"')
+    
+    send_button_spot = st.empty()
+    if send_button_spot.button(f"Send", type='primary', use_container_width=True):
+        filename = f"chat_history_{student_name or 'student'}.html"
+        
+        with st.spinner("Sending chat to teacher..."):
+            # Send the HTML content directly
+            send_email_chat(st.session_state.teacher_email, student_name, message, 
+                        session_html, filename)
+        send_button_spot.success(f"Your convo has been sent to your teacher!")
+
+    if st.button(f"Close", use_container_width=True):
+        st.rerun()
+
+def send_chat_button(tool_name, container):
+    session_md = convert_messages_to_markdown(st.session_state.messages)
+    session_html = markdown_to_html(session_md, tool_name)
+
+    
+    if container.button("📨 Send to Teacher", type='primary', use_container_width=True, help="Send chat to your teacher"):
+        send_to_teacher(session_html)

@@ -125,23 +125,28 @@ class AITutor:
         get_message_history(): Returns the history of messages in the conversation.
     """
 
-    def __init__(self, llm_model, tool_name, instructions, introduction, knowledge_file_paths, display_system=False):
+    def __init__(self, llm_model, tool_name, instructions, introduction, guidelines, knowledge_file_paths, display_system=False):
         self.llm = llm_model
         self.message_history = []
         self.introduction = introduction
 
         # Add these as a "system prompt"
-        system_prompt = "# AI Tutor Instructions\n\n"
-        system_prompt += "Below are the guidelines for the tutor's interactions with the user:\n\n"
-        system_prompt += f"{instructions}\n\n"
-        system_prompt += """
+        system_prompt = f"""
+You are a helpful AI tutor/assistant.
+Following the instructions below, provide supportive assistance to the student user.
+
+# AI Tutor Role
+
+{instructions}
+
+## Response Criteria
+
+{guidelines}
+
 **Math Formatting:**
-   - Importantly, **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT. STRICTLY USE `$`,`$` OR `$$`,`$$` FORMATTING.**
-   - This is extremely important because the `\(\)` and `\[\]` formatting will not work when displayed to the user.
-        """
-        system_prompt += "\n\n## Your Task\n\n"
-        system_prompt += "You are a helpful AI tutor/assistant. "
-        system_prompt += "Following the instructions above, provide supportive assistance to the student user."
+  - Importantly, **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT. STRICTLY USE `$`,`$` OR `$$`,`$$` FORMATTING.**
+  - This is extremely important because the `\(\)` and `\[\]` formatting will not work when displayed to the user.
+"""
         if display_system:
             print(system_prompt)
 

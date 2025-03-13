@@ -7,7 +7,7 @@ from utils.styling import stream_lines
 from utils.access_codes import use_code
 
 # If necessary, load tutor data, user data, styling, memory manager, etc.
-check_state()
+check_state(reset_teacher=False)
 
 params = st.query_params
 if 'code' in params:
