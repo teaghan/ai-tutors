@@ -15,7 +15,7 @@ else:
     page_name = 'AI Tutor'
 
 st.set_page_config(page_title=page_name, page_icon="https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_favicon4.png", 
-                    layout="wide")
+                    layout="wide", initial_sidebar_state="collapsed")
 
 # If necessary, load tutor data, user data, etc.
 check_state(check_user=True, reset_teacher=False)
