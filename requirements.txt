@@ -12,3 +12,4 @@ emoji==2.14.0
 chardet==5.2.0
 stripe==11.6.0
 streamlit-audiorecorder==0.0.6
+google-cloud-speech==2.31.0
