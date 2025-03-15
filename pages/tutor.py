@@ -66,6 +66,20 @@ if "stream_init_msg" not in st.session_state:
 if "teacher_email" not in st.session_state:
     st.session_state.teacher_email = None
 
+# Load model
+if not st.session_state.model_loaded:
+    # Construct pipiline
+    st.session_state['tutor_llm'] = TutorChain(st.session_state["tool name"],
+                                                st.session_state["instructions"],
+                                                st.session_state["guidelines"],
+                                                st.session_state["introduction"],
+                                                st.session_state["knowledge_file_paths"])
+    st.session_state.model_loads +=1
+
+    init_request = st.session_state.tutor_llm.init_request        
+    st.session_state.messages.append({"role": "assistant", "content": init_request})
+    st.session_state.model_loaded = True
+
 # Function to stream text letter by letter
 def stream_text(text):
     sentence = ""
@@ -110,22 +124,6 @@ dropped_files = col1.file_uploader("File Uploader",
             type=["pdf", "png", "jpg", "docx", "csv", "txt", "rtf", "zip"],
             key=f"file_upload_{st.session_state['file_upload_key']}"
         )
-# Load model
-if not st.session_state.model_loaded:
-    with st.spinner('Loading...'):
-        # Construct pipiline
-        st.session_state['tutor_llm'] = TutorChain(st.session_state["tool name"],
-                                                   st.session_state["instructions"],
-                                                   st.session_state["guidelines"],
-                                                   st.session_state["introduction"],
-                                                   st.session_state["knowledge_file_paths"])
-        st.session_state.model_loads +=1
-
-        init_request = st.session_state.tutor_llm.init_request        
-        st.session_state.messages.append({"role": "assistant", "content": init_request})
-
-        st.session_state.model_loaded = True
-        st.session_state["model_loads"] += 0
 
 prompt = st.chat_input()
 if prompt:
