@@ -99,3 +99,4 @@ def reset_chatbot():
     st.session_state['file_upload_key'] = 0
     st.session_state['stream_init_msg'] = True
     st.session_state['audio'] = ''
+    st.session_state['drop_file'] = False

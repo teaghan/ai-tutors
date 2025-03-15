@@ -77,3 +77,70 @@ def scroll_to(element_id):
             element.scrollIntoView({{behavior: 'smooth'}});
         </script>
     '''.encode())
+
+def button_style():
+    pr_color = st.get_option('theme.primaryColor')
+    bg_color = st.get_option('theme.backgroundColor')
+    sbg_color = st.get_option('theme.secondaryBackgroundColor')
+    st.markdown(
+        f"""
+        <style>
+        .element-container:has(#button-after) + div button {{
+            background-color: {bg_color};
+            border: 0px solid {pr_color};
+            color: {pr_color};
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }}
+        .element-container:has(#button-after) + div button:hover {{
+            background-color: {sbg_color};
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    def custom_button():
+        st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
+
+    return custom_button
+
+def columns_style():
+    st.markdown(
+        """
+        <style>
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"] {
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            gap: 10px;
+            padding-bottom: 10px;
+            justify-content: flex-start !important;
+            max-width: 100% !important;
+        }
+        
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"] > div {
+            flex: 0 0 80px !important;
+            min-width: 80px !important;
+            width: 80px !important;
+            margin-right: 0 !important;
+        }
+        
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"] button {
+            width: 100% !important;
+            min-width: unset !important;
+            padding: 0 8px !important;
+        }
+        
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"]::-webkit-scrollbar {
+            display: none;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    def custom_columns():
+        st.markdown('<span id="scrollable-columns-after"></span>', unsafe_allow_html=True)
+    
+    return custom_columns

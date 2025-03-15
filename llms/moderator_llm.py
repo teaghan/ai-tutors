@@ -193,8 +193,12 @@ Your Task: Provide a corrected response based on the full conversation that is a
         previous_conversation = "\n\n".join([f"**{message.role.value}**: {message.content}" for message in chat_history[:-1]])
         
         # If the response is inappropriate, pass it to the corrector LLM
-        with st.spinner('Correcting my response...'):
-            final_response = self.correct_response(previous_conversation, previous_responses, previous_feedback)
+        if 'chat_spinner' in st.session_state:
+            with st.session_state.chat_spinner, st.spinner('Correcting my response...'):
+                final_response = self.correct_response(previous_conversation, previous_responses, previous_feedback)
+        else:
+            with st.spinner('Correcting my response...'):
+                final_response = self.correct_response(previous_conversation, previous_responses, previous_feedback)
         
         return final_response
     
@@ -232,13 +236,21 @@ Your Task: Provide a corrected response based on the full conversation that is a
         previous_conversation = "\n\n".join([f"**{message.role.value}**: {message.content}" for message in chat_history[:-1]])
     
         # Moderate the AI response using the full previous conversation context
-        with st.spinner('Considering my response...'):
-            moderator_feedback, is_appropriate = self.moderate_response(previous_conversation, ai_response)
+        if 'chat_spinner' in st.session_state:
+            with st.session_state.chat_spinner, st.spinner('Considering my response...'):
+                moderator_feedback, is_appropriate = self.moderate_response(previous_conversation, ai_response)
+        else:
+            with st.spinner('Considering my response...'):
+                moderator_feedback, is_appropriate = self.moderate_response(previous_conversation, ai_response)
         
         # If the response is inappropriate, pass it to the corrector LLM
         if not is_appropriate:
-            with st.spinner('Correcting my response...'):
-                corrected_response = self.correct_response(previous_conversation, ai_response, moderator_feedback)
+            if 'chat_spinner' in st.session_state:
+                with st.session_state.chat_spinner, st.spinner('Correcting my response...'):
+                    corrected_response = self.correct_response(previous_conversation, ai_response, moderator_feedback)
+            else:
+                with st.spinner('Correcting my response...'):
+                    corrected_response = self.correct_response(previous_conversation, ai_response, moderator_feedback)
             final_response = corrected_response
         else:
             final_response = ai_response

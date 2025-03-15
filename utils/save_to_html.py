@@ -274,18 +274,25 @@ def is_valid_file_name(file_name: str) -> bool:
                 file_name in reserved_words or
                 len(file_name) > 255)
 
-def download_chat_button(tool_name, container):
+def download_chat_button(tool_name, container, include_text=True):
     session_md = convert_messages_to_markdown(st.session_state.messages)
     session_html = markdown_to_html(session_md, tool_name)
     file_name = f"ai_tutor_{''.join(str(random.randint(0, 9)) for _ in range(5))}.html"
 
+    if include_text:
+        button_text = "💾 Download Chat"
+        use_container_width = True
+    else:
+        button_text = "💾"
+        use_container_width = False
     download_chat_session = container.download_button(
-        label="⬇️ Download Chat",
+        label=button_text,
         data=session_html,
         file_name=file_name,
-        use_container_width=True,
+        use_container_width=use_container_width,
         type='secondary',
         mime="text/markdown",
+        help="Save chat"
     )
     if download_chat_session:
         if is_valid_file_name(file_name):
@@ -303,22 +310,32 @@ def send_to_teacher(session_html):
                           placeholder='e.g. "Can you please look over my chat and give me some feedback?"')
     
     send_button_spot = st.empty()
-    if send_button_spot.button(f"Send", type='primary', use_container_width=True):
-        filename = f"chat_history_{student_name or 'student'}.html"
-        
-        with st.spinner("Sending chat to teacher..."):
-            # Send the HTML content directly
-            send_email_chat(st.session_state.teacher_email, student_name, message, 
-                        session_html, filename)
-        send_button_spot.success(f"Your convo has been sent to your teacher!")
-
+    email_sent = st.session_state.get('email_sent', False)
+    if not email_sent:
+        if send_button_spot.button(f"Send", type='primary', use_container_width=True):
+            st.session_state['email_sent'] = True
+            filename = f"chat_history_{student_name or 'student'}.html"
+            
+            with st.spinner("Sending chat to teacher..."):
+                # Send the HTML content directly
+                send_email_chat(st.session_state.teacher_email, student_name, message, 
+                            session_html, filename)
+            send_button_spot.success(f"Your convo has been sent to your teacher!")
+    else:
+        send_button_spot.success(f"Your convo has already been sent to your teacher!")
     if st.button(f"Close", use_container_width=True):
         st.rerun()
 
-def send_chat_button(tool_name, container):
+def send_chat_button(tool_name, container, include_text=True):
     session_md = convert_messages_to_markdown(st.session_state.messages)
     session_html = markdown_to_html(session_md, tool_name)
 
-    
-    if container.button("📨 Send to Teacher", type='primary', use_container_width=True, help="Send chat to your teacher"):
+    if include_text:
+        button_text = "📨 Send to Teacher"
+        use_container_width = True
+    else:
+        button_text = "✉️"
+        use_container_width = False
+    if container.button(button_text, type='primary', 
+                        use_container_width=use_container_width, help="Send chat to your teacher"):
         send_to_teacher(session_html)

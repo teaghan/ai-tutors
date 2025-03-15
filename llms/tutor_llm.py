@@ -27,9 +27,14 @@ class TutorChain:
                                               self.tutor_llm.chat_engine)
 
     def get_response(self, student_prompt, moderate=True, max_moderations=3):
-        # Prompt AI tutor
-        with st.spinner('Coming up with a response...'):
-            ai_response = self.tutor_llm.get_response(student_prompt)
+        if 'chat_spinner' in st.session_state:
+            # Prompt AI tutor
+            with st.session_state.chat_spinner, st.spinner('Coming up with a response...'):
+                ai_response = self.tutor_llm.get_response(student_prompt)
+        else:
+            # Prompt AI tutor
+            with st.spinner('Coming up with a response...'):
+                ai_response = self.tutor_llm.get_response(student_prompt)
 
         if moderate:
             num_moderations = 0

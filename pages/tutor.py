@@ -9,7 +9,7 @@ from utils.save_to_html import download_chat_button, escape_markdown, send_chat_
 from utils.calculator import equation_creator
 from utils.file_handler import extract_text_from_different_file_types
 from utils.speech_to_txt import stt
-
+from utils.styling import button_style, columns_style
 pause_time_between_chars = 0.01
 
 if "tool name" in st.session_state:
@@ -24,7 +24,8 @@ st.set_page_config(page_title=page_name, page_icon="https://raw.githubuserconten
 check_state(check_user=True, reset_teacher=False)
 
 menu()
-
+custom_button = button_style()
+custom_columns = columns_style()
 # Avatar images
 avatar = {"user": "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_student_avatar1.png",
           "assistant": "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_avatar2.png"}
@@ -70,6 +71,12 @@ if "teacher_email" not in st.session_state:
     st.session_state.teacher_email = None
 if "audio" not in st.session_state:
     st.session_state.audio = ''
+if "drop_file" not in st.session_state:
+    st.session_state.drop_file = False
+if "email_sent" not in st.session_state:
+    st.session_state.email_sent = False
+if "audio_recorder_key" not in st.session_state:
+    st.session_state.audio_recorder_key = 0
 
 # Load model
 if not st.session_state.model_loaded:
@@ -109,48 +116,103 @@ if len(st.session_state.messages)>0:
                 st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(escape_markdown(rf"{msg["content"]}"))
             else:
                 st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
+    next_user_message = st.empty()
+    next_assistant_message = st.empty()
+    st.session_state.chat_spinner = st.container()
+st.markdown(
+    """
+    <style>
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 10px;  /* Space between buttons */
+        padding-bottom: 10px;  /* Space for scrollbar */
+        justify-content: flex-start !important;  /* Align items to start */
+        max-width: 100% !important;
+    }
+    
+    /* Lock column widths to a specific size */
+    [data-testid="stHorizontalBlock"] > div {
+        flex: 0 0 80px !important;  /* Fixed width for columns */
+        min-width: 80px !important;
+        width: 80px !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Make buttons fill their container */
+    [data-testid="stHorizontalBlock"] button {
+        width: 100% !important;
+        min-width: unset !important;
+        padding: 0 8px !important;
+    }
+    
+    /* Hide scrollbar (optional) */
+    [data-testid="stHorizontalBlock"]::-webkit-scrollbar {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# The following code is for saving the messages to a html file.
-#col1, col2, col3 = st.columns((1.5, 0.5, 0.5))
-col1, col2, col3 = st.columns((1, 1, 1))
+custom_columns()
+col1, col2, col3, col4 = st.columns((1, 1, 1, 1))
 
-download_chat_session = download_chat_button(st.session_state["tool name"], container=col2)
-
-if st.session_state.teacher_email:
-    send_chat_button(st.session_state["tool name"], container=col3)
+with col1:
+    custom_button()
+    if st.button("📎", help="Attach file"):
+        st.session_state.drop_file = True
 
 # Button for resetting the chat.
-if col1.button("🔄 Reset Chat", use_container_width=True, help="Reset chat"):
-    reset_chatbot()
-    st.rerun()
-
-col1, col2 = st.columns((1, 1))
-
-# File uploader
-dropped_files = col1.file_uploader("File Uploader",
-            help="Drop your work/assignment here!", 
-            label_visibility='collapsed',
-            accept_multiple_files=True, 
-            type=["pdf", "png", "jpg", "docx", "csv", "txt", "rtf", "zip"],
-            key=f"file_upload_{st.session_state['file_upload_key']}"
-        )
-
 with col2:
-    st.markdown("**Speech to Text:**")
+    custom_button()
+    if st.button("🔄", use_container_width=False, help="Reset chat"):
+        reset_chatbot()
+        st.rerun()
+
+# Download chat button
+with col3:
+    custom_button()
+    download_chat_session = download_chat_button(st.session_state["tool name"], 
+                                                 container=col3,
+                                                 include_text=False)
+# Send chat to teacher button
+if st.session_state.teacher_email:
+    with col4:
+        st.markdown(' ')
+        send_chat_button(st.session_state["tool name"], 
+                         container=col4,
+                         include_text=False)
+
+
+if st.session_state.drop_file:
+    # File uploader
+    dropped_files = st.file_uploader("File Uploader",
+                help="Drop your work/assignment here!", 
+                label_visibility='collapsed',
+                accept_multiple_files=True, 
+                type=["pdf", "png", "jpg", "docx", "csv", "txt", "rtf", "zip"],
+                key=f"file_upload_{st.session_state.file_upload_key}")
+else:
+    dropped_files = []
+# Create a container for both audio and chat input
+input_container = st.container()
+
+with input_container:
     # Speech input
     audio = audiorecorder(start_prompt="", stop_prompt="", pause_prompt="",
-                            show_visualizer=True, key='audio_recorder')
+                            show_visualizer=True, key=f'audio_recorder_{st.session_state.audio_recorder_key}')
+    # Text input
+    prompt = st.chat_input()
+
 # Speech to Text
 audio_prompt = ''
+print(f'audio: {len(audio)}')
 if len(audio) > 0:
-    with st.spinner("Being a good listener..."):
+    del st.session_state[f'audio_recorder_{st.session_state.audio_recorder_key}']
+    st.session_state.audio_recorder_key += 1
+    with st.session_state.chat_spinner, st.spinner("Being a good listener..."):
         audio_prompt = stt(audio.export(format="wav").read())
-    del st.session_state.audio_recorder
-
-# Text input
-prompt = st.chat_input()
-
-# Use either text or speech input
 if audio_prompt:
     prompt = audio_prompt
     audio_prompt = ''
@@ -161,13 +223,15 @@ if prompt:
     if dropped_files:
         for file in dropped_files:
             try:
-                with st.spinner(f"Processing: {file.name}"):
+                with st.session_state.chat_spinner, st.spinner(f"Processing: {file.name}"):
                     extracted_text = extract_text_from_different_file_types(file)
                     processed_file_text += f"\n\n**{file.name}**\n\n{extracted_text}"
             except Exception as e:
                 st.error(f"Error processing {file.name}: {str(e)}")
                 st.exception(e)
-        st.session_state["file_upload_key"] += 1
+        del st.session_state[f'file_upload_{st.session_state.file_upload_key}']
+        st.session_state.file_upload_key += 1
+        st.session_state.drop_file = False
 
     # Add the uploaded file contents to the prompt
     if processed_file_text:
@@ -175,18 +239,17 @@ if prompt:
     else:
         prompt_full = prompt
 
-    print(prompt_full)
-
     # Add the user's prompt to the conversation
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.chat_message("user", avatar=avatar["user"]).markdown(escape_markdown(prompt))
+    with next_user_message:
+        st.chat_message("user", avatar=avatar["user"]).markdown(escape_markdown(prompt))
 
     # Get the response from the tutor
     response = st.session_state.tutor_llm.get_response(prompt_full)
     st.session_state.messages.append({"role": "assistant", "content": rf"{response}"})    
-    
+    st.session_state.email_sent = False
     # Display the response letter by letter
-    with st.chat_message("assistant", avatar=avatar["assistant"]):
+    with next_assistant_message.chat_message("assistant", avatar=avatar["assistant"]):
         with st.empty():
             for sentence in stream_text(response):
                 st.markdown(sentence)
