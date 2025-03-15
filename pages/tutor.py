@@ -136,7 +136,7 @@ dropped_files = col1.file_uploader("File Uploader",
         )
 
 with col2:
-    st.markdown("**Speech to Text** (attach your files first)")
+    st.markdown("**Speech to Text:**")
     # Speech input
     audio = audiorecorder(start_prompt="", stop_prompt="", pause_prompt="",
                             show_visualizer=True, key='audio_recorder')
