@@ -1,11 +1,14 @@
 import streamlit as st
+import time
+from audiorecorder import audiorecorder
+
 from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.session import check_state, reset_chatbot
 from utils.save_to_html import download_chat_button, escape_markdown, send_chat_button
 from utils.calculator import equation_creator
-import time
 from utils.file_handler import extract_text_from_different_file_types
+from utils.speech_to_txt import stt
 
 pause_time_between_chars = 0.01
 
@@ -65,6 +68,8 @@ if "stream_init_msg" not in st.session_state:
     st.session_state.stream_init_msg = True
 if "teacher_email" not in st.session_state:
     st.session_state.teacher_email = None
+if "audio" not in st.session_state:
+    st.session_state.audio = ''
 
 # Load model
 if not st.session_state.model_loaded:
@@ -106,17 +111,22 @@ if len(st.session_state.messages)>0:
                 st.chat_message(msg["role"], avatar=avatar[msg["role"]]).markdown(rf"{msg["content"]}")
 
 # The following code is for saving the messages to a html file.
-col1, col2, col3 = st.columns((1.5, 0.5, 0.5))
-download_chat_session = download_chat_button(st.session_state["tool name"], container=col3)
+#col1, col2, col3 = st.columns((1.5, 0.5, 0.5))
+col1, col2, col3 = st.columns((1, 1, 1))
+
+download_chat_session = download_chat_button(st.session_state["tool name"], container=col2)
 
 if st.session_state.teacher_email:
     send_chat_button(st.session_state["tool name"], container=col3)
 
 # Button for resetting the chat.
-if col2.button("🔄 Reset Chat", use_container_width=True, help="Reset chat"):
+if col1.button("🔄 Reset Chat", use_container_width=True, help="Reset chat"):
     reset_chatbot()
     st.rerun()
 
+col1, col2 = st.columns((1, 1))
+
+# File uploader
 dropped_files = col1.file_uploader("File Uploader",
             help="Drop your work/assignment here!", 
             label_visibility='collapsed',
@@ -125,7 +135,26 @@ dropped_files = col1.file_uploader("File Uploader",
             key=f"file_upload_{st.session_state['file_upload_key']}"
         )
 
+with col2:
+    st.markdown("**Speech to Text** (attach your files first)")
+    # Speech input
+    audio = audiorecorder(start_prompt="", stop_prompt="", pause_prompt="",
+                            show_visualizer=True, key='audio_recorder')
+# Speech to Text
+audio_prompt = ''
+if len(audio) > 0:
+    with st.spinner("Being a good listener..."):
+        audio_prompt = stt(audio.export(format="wav").read())
+    del st.session_state.audio_recorder
+
+# Text input
 prompt = st.chat_input()
+
+# Use either text or speech input
+if audio_prompt:
+    prompt = audio_prompt
+    audio_prompt = ''
+
 if prompt:
     # Process dropped files
     processed_file_text = ''
