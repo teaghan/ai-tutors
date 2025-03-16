@@ -1,13 +1,90 @@
-import tempfile
-import os
 import re
 from typing import List, Dict
 import markdown
-from pygments.formatters import HtmlFormatter
 import streamlit as st
 import random
 from datetime import datetime
 from utils.emailing import send_email_chat
+import weasyprint
+from weasyprint.text.fonts import FontConfiguration
+from pygments.formatters import HtmlFormatter
+import matplotlib.pyplot as plt
+import io
+
+def latex_to_svg(latex: str, is_inline: bool = True) -> str:
+    """
+    Convert LaTeX to SVG using matplotlib.
+    """
+    try:
+        # Create figure with transparent background
+        if is_inline:
+            fig = plt.figure(figsize=(0.4, 0.5))  # Adjusted for inline equations
+        else:
+            fig = plt.figure(figsize=(6, 1))  # Adjusted for display equations
+        fig.patch.set_alpha(0)
+        
+        # Add text with LaTeX
+        if is_inline:
+            plt.text(0, 0, f'${latex}$', fontsize=10)
+        else:
+            plt.text(0, 0, f'$${latex}$$', fontsize=14)
+            
+        # Remove axes and margins
+        plt.axis('off')
+        plt.margins(0)
+        
+        # Save to SVG string
+        buf = io.BytesIO()
+        plt.savefig(buf, format='svg', bbox_inches='tight', pad_inches=0, 
+                   transparent=True, dpi=300)
+        plt.close()
+        
+        # Get SVG content and clean it up
+        svg_content = buf.getvalue().decode('utf-8')
+        return svg_content
+    except Exception as e:
+        print(f"Error converting latex to svg: {e}")
+        return latex
+    
+def convert_math_to_svg(html_content: str) -> str:
+    """
+    Converts LaTeX math expressions to SVG for PDF rendering.
+    """
+    # Convert display math ($$...$$)
+    display_math_pattern = re.compile(r'(?<!\\)\$\$(.*?)\$\$', re.DOTALL)
+    def replace_display_math(match):
+        latex = match.group(1).strip()
+        try:
+            svg_content = latex_to_svg(latex, is_inline=False)
+            return f'<div class="math-block">{svg_content}</div>'
+        except:
+            return match.group(0)
+    
+    # Convert inline math ($...$)
+    inline_math_pattern = re.compile(r'(?<!\\)\$(.*?)\$(?!\$)', re.DOTALL)
+    def replace_inline_math(match):
+        latex = match.group(1).strip()
+        try:
+            svg_content = latex_to_svg(latex, is_inline=True)
+            return f'<span class="math-inline">{svg_content}</span>'
+        except:
+            return match.group(0)
+    
+    # Process math expressions
+    html_content = re.sub(display_math_pattern, replace_display_math, html_content)
+    html_content = re.sub(inline_math_pattern, replace_inline_math, html_content)
+    
+    return html_content
+
+def generate_pdf(html_content: str) -> bytes:
+    """
+    Generate PDF from HTML content with proper font configuration.
+    """
+    font_config = FontConfiguration()
+    return weasyprint.HTML(string=html_content).write_pdf(
+        stylesheets=[],
+        font_config=font_config
+    )
 
 def escape_markdown(text: str) -> str:
     """
@@ -89,167 +166,101 @@ def _indent_content(content: str, code_block_indent: str) -> str:
     else:
         return ""
 
-def markdown_to_html(md_content: str, tool_name: str) -> str:
+def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, student_message: str = None) -> str:
     """
     Converts markdown content to HTML with syntax highlighting and custom styling.
-
-    This function takes a string containing markdown-formatted text and converts it to HTML.
-    It adds the tool name and current date at the top of the content.
-
+    
     Args:
-        md_content (str): A string containing markdown-formatted text.
-        tool_name (str): The name of the tool to be displayed at the top of the file.
-
-    Returns:
-        A string containing the HTML representation of the markdown text, including a style tag
-        with CSS for syntax highlighting and custom styles for the <code> and <em> elements.
+        md_content (str): The markdown content to convert
+        tool_name (str): Name of the tool
+        student_name (str, optional): Student's name to include in header
+        student_message (str, optional): Student's message to include in header
     """
-
-    # Get the current date
-    current_date = datetime.now().strftime("%Y-%m-%d")
+    # Get the current date and theme color
+    current_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    theme_color = st.get_option('theme.primaryColor')
 
     # Add tool name and date at the top of the markdown content
     header = f"# {tool_name}\n**Date:** {current_date}\n\n"
+    
+    # Add student info if provided
+    if student_name or student_message:
+        header += "#### Student Information\n"
+        if student_name:
+            header += f"**Student Name:** {student_name}\n\n"
+        if student_message:
+            header += f"**Message to teacher:** {student_message}\n\n"
+        header += "---\n\n"  # Add a horizontal line to separate student info from chat
+
     md_content = header + md_content
 
     # Convert markdown to HTML with syntax highlighting
     html_content = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite'])
 
-    html_content = re.sub(
-        r'<code>',
-        '<code style="background-color: #f7f7f7; color: green;">',
-        html_content
-    )
-
-    html_content = re.sub(
-        r'<h3>',
-        '<h3 style="color: blue;">',
-        html_content
-    )
-
     # Get CSS for syntax highlighting from Pygments
     css = HtmlFormatter(style='tango').get_style_defs('.codehilite')
 
-    # Insert MathJax
-    html_content = process_html_with_mathjax(f"<style>{css}</style>{html_content}")
+    # Convert math expressions to SVG
+    html_content = convert_math_to_svg(html_content)
+
+    # Add styling
+    html_content = f"""
+    <html>
+    <head>
+        <style>
+            {css}
+            body {{ 
+                font-family: Arial, sans-serif; 
+                padding: 20px;
+                max-width: 800px;
+                margin: 0 auto;
+            }}
+            h1, h2 {{ 
+                color: {theme_color};
+                margin-bottom: 0.5em;
+            }}
+            h3 {{ 
+                color: {theme_color};
+                opacity: 0.8;
+                margin-bottom: 0.3em;
+            }}
+            code {{ 
+                background-color: #f7f7f7; 
+                color: green; 
+                padding: 2px 4px; 
+            }}
+            blockquote {{ 
+                border-left: 3px solid {theme_color}; 
+                margin-left: 20px;
+                padding-left: 10px;
+                margin-top: 0.5em;
+            }}
+            .math-block {{
+                text-align: center;
+                margin: 1em 0;
+            }}
+            .math-inline {{
+                vertical-align: middle;
+                display: inline-block;
+            }}
+            svg {{
+                vertical-align: middle;
+            }}
+            hr {{
+                border: none;
+                border-top: 2px solid {theme_color};
+                opacity: 0.3;
+                margin: 20px 0;
+            }}
+        </style>
+    </head>
+    <body>
+        {html_content}
+    </body>
+    </html>
+    """
 
     return html_content
-
-def preprocess_math(html_content: str) -> str:
-    """
-    Preprocess the HTML content to ensure that inline and display math expressions 
-    are correctly formatted for MathJax to process.
-
-    Args:
-        html_content (str): The original HTML content.
-
-    Returns:
-        The HTML content with correctly preprocessed math expressions.
-    """
-    # Process display math (e.g., $$...$$) first to avoid interference from inline math
-    display_math_pattern = re.compile(r'(?<!\\)\$\$(.+?)\$\$', re.DOTALL)
-    html_content = re.sub(display_math_pattern, r'\\[\1\\]', html_content)
-
-    # Process inline math (e.g., $...$) with stricter negative lookahead
-    inline_math_pattern = re.compile(r'(?<!\\)\$(.+?)\$(?!\$)', re.DOTALL)
-    html_content = re.sub(inline_math_pattern, r'\\(\1\\)', html_content)
-
-    return html_content
-
-
-def preprocess_math(html_content: str) -> str:
-    """
-    Preprocess the HTML content to ensure that inline and display math expressions 
-    are correctly formatted for MathJax to process.
-
-    Args:
-        html_content (str): The original HTML content.
-
-    Returns:
-        The HTML content with correctly preprocessed math expressions.
-    """
-    # Ensure display math is processed first (e.g., $$...$$)
-    display_math_pattern = re.compile(r'(?<!\\)\$\$(.+?)\$\$', re.DOTALL)
-    html_content = re.sub(display_math_pattern, r'\\[\1\\]', html_content)
-
-    # Now process inline math (e.g., $...$) with stricter boundaries
-    inline_math_pattern = re.compile(r'(?<!\\)\$(.+?)\$(?!\$)', re.DOTALL)
-    html_content = re.sub(inline_math_pattern, r'\\(\1\\)', html_content)
-
-    return html_content
-
-
-def insert_mathjax(html_content: str) -> str:
-    """
-    Inserts the MathJax script and configuration into the HTML content.
-
-    The MathJax script is placed before the closing </head> tag in the HTML content.
-
-    Args:
-        html_content (str): The original HTML content.
-
-    Returns:
-        The HTML content with the MathJax script and configuration inserted.
-    """
-    mathjax_script = """
-    <!-- Load MathJax -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"></script>
-    <!-- MathJax configuration -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        TeX: {
-          equationNumbers: {
-            autoNumber: "AMS",
-            useLabelIds: true
-          }
-        },
-        tex2jax: {
-          inlineMath: [ ['\\\(','\\\)'], ['$','$'] ],
-          displayMath: [ ['\\\[','\\\]'], ['$$','$$'] ],
-          processEscapes: true,
-          processEnvironments: true,
-          ignoreClass: "no-mathjax",  <!-- Ignore specific classes -->
-          processClass: "mathjax-process",  <!-- Process specific classes -->
-        },
-        displayAlign: 'center',
-        CommonHTML: {
-          linebreaks: {
-            automatic: true
-          }
-        }
-      });
-      MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-    </script>
-    """
-
-    # Insert the MathJax script before the closing </head> tag
-    if "</head>" in html_content:
-        html_content = html_content.replace("</head>", f"{mathjax_script}</head>")
-    else:
-        # If there's no </head> tag, insert the MathJax script at the beginning
-        html_content = f"{mathjax_script}\n{html_content}"
-    
-    return html_content
-
-
-def process_html_with_mathjax(html_content: str) -> str:
-    """
-    Preprocess the HTML content for inline math expressions and insert the MathJax configuration.
-
-    Args:
-        html_content (str): The original HTML content.
-
-    Returns:
-        The final HTML content with preprocessed inline math and MathJax support.
-    """
-    # Step 1: Preprocess inline math
-    preprocessed_content = preprocess_math(html_content)
-
-    # Step 2: Insert MathJax configuration
-    final_content = insert_mathjax(preprocessed_content)
-
-    return final_content
-
 
 def is_valid_file_name(file_name: str) -> bool:
     """
@@ -277,7 +288,7 @@ def is_valid_file_name(file_name: str) -> bool:
 def download_chat_button(tool_name, container, include_text=True):
     session_md = convert_messages_to_markdown(st.session_state.messages)
     session_html = markdown_to_html(session_md, tool_name)
-    file_name = f"ai_tutor_{''.join(str(random.randint(0, 9)) for _ in range(5))}.html"
+    file_name = f"ai_tutor_{''.join(str(random.randint(0, 9)) for _ in range(5))}.pdf"
 
     if include_text:
         button_text = "💾 Download Chat"
@@ -285,13 +296,16 @@ def download_chat_button(tool_name, container, include_text=True):
     else:
         button_text = "💾"
         use_container_width = False
+
+    pdf_content = generate_pdf(session_html)
+
     download_chat_session = container.download_button(
         label=button_text,
-        data=session_html,
+        data=pdf_content,
         file_name=file_name,
         use_container_width=use_container_width,
         type='secondary',
-        mime="text/markdown",
+        mime="application/pdf",
         help="Save chat"
     )
     if download_chat_session:
@@ -301,7 +315,7 @@ def download_chat_button(tool_name, container, include_text=True):
             st.error(f"The file name '{file_name}' is not a valid file name. File not saved!", icon="🚨")
 
 @st.dialog("Send to Teacher")
-def send_to_teacher(session_html):
+def send_to_teacher(tool_name):
     st.markdown(f"Feel free to include some additional information for your teacher.")
 
     student_name = st.text_input("Your name/nickname (recommended):", 
@@ -314,22 +328,24 @@ def send_to_teacher(session_html):
     if not email_sent:
         if send_button_spot.button(f"Send", type='primary', use_container_width=True):
             st.session_state['email_sent'] = True
-            filename = f"chat_history_{student_name or 'student'}.html"
+            filename = f"chat_history_{student_name or 'student'}.pdf"
             
             with st.spinner("Sending chat to teacher..."):
-                # Send the HTML content directly
+                # Do all the conversion work inside the spinner
+                session_md = convert_messages_to_markdown(st.session_state.messages)
+                session_html = markdown_to_html(session_md, tool_name, 
+                                             student_name=student_name, 
+                                             student_message=message)
+                pdf_content = generate_pdf(session_html)
                 send_email_chat(st.session_state.teacher_email, student_name, message, 
-                            session_html, filename)
+                            pdf_content, filename)
             send_button_spot.success(f"Your convo has been sent to your teacher!")
     else:
-        send_button_spot.success(f"Your convo has already been sent to your teacher!")
+        send_button_spot.success(f"Your convo has been sent to your teacher!")
     if st.button(f"Close", use_container_width=True):
         st.rerun()
 
 def send_chat_button(tool_name, container, include_text=True):
-    session_md = convert_messages_to_markdown(st.session_state.messages)
-    session_html = markdown_to_html(session_md, tool_name)
-
     if include_text:
         button_text = "📨 Send to Teacher"
         use_container_width = True
@@ -337,5 +353,6 @@ def send_chat_button(tool_name, container, include_text=True):
         button_text = "✉️"
         use_container_width = False
     if container.button(button_text, type='primary', 
-                        use_container_width=use_container_width, help="Send chat to your teacher"):
-        send_to_teacher(session_html)
+                    use_container_width=use_container_width, 
+                    help="Send chat to your teacher"):
+        send_to_teacher(tool_name)

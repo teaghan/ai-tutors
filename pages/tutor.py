@@ -9,7 +9,7 @@ from utils.save_to_html import download_chat_button, escape_markdown, send_chat_
 from utils.calculator import equation_creator
 from utils.file_handler import extract_text_from_different_file_types
 from utils.speech_to_txt import stt
-from utils.styling import button_style, columns_style
+from utils.styling import button_style, columns_style, scroll_to
 pause_time_between_chars = 0.01
 
 if "tool name" in st.session_state:
@@ -26,6 +26,7 @@ check_state(check_user=True, reset_teacher=False)
 menu()
 custom_button = button_style()
 custom_columns = columns_style()
+
 # Avatar images
 avatar = {"user": "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_student_avatar1.png",
           "assistant": "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_avatar2.png"}
@@ -35,8 +36,7 @@ st.markdown(f"<h1 style='text-align: center; color: grey;'>&nbsp;&nbsp;&nbsp;{st
 
 # Display Tutor Profile Image
 tutor_image_url = "https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/AIT_avatar1.png"
-col1, col2, col3 = st.columns(3)
-col2.image(tutor_image_url, use_container_width=True)
+st.markdown(f'<div style="display: flex; justify-content: center;"><img src="{tutor_image_url}" style="width: 20%;"></div>', unsafe_allow_html=True)
 
 # Interaction Tips
 with st.expander("💡 **Tips** for interacting with AI Tutors"):
@@ -56,21 +56,16 @@ with st.expander("💡 **Tips** for interacting with AI Tutors"):
     - Square Root: Type `\sqrt{}` using the `{}` brackets to enclose the number. For example: `\sqrt{4}`
     """)
 
-
 if "model_loaded" not in st.session_state:
     st.session_state.model_loaded = False
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
-if "model_loads" not in st.session_state:
-    st.session_state["model_loads"] = 0
 if "file_upload_key" not in st.session_state:
     st.session_state.file_upload_key = 0
 if "stream_init_msg" not in st.session_state:
     st.session_state.stream_init_msg = True
 if "teacher_email" not in st.session_state:
     st.session_state.teacher_email = None
-if "audio" not in st.session_state:
-    st.session_state.audio = ''
 if "drop_file" not in st.session_state:
     st.session_state.drop_file = False
 if "email_sent" not in st.session_state:
@@ -86,7 +81,6 @@ if not st.session_state.model_loaded:
                                                 st.session_state["guidelines"],
                                                 st.session_state["introduction"],
                                                 st.session_state["knowledge_file_paths"])
-    st.session_state.model_loads +=1
 
     init_request = st.session_state.tutor_llm.init_request        
     st.session_state.messages.append({"role": "assistant", "content": init_request})
@@ -119,44 +113,13 @@ if len(st.session_state.messages)>0:
     next_user_message = st.empty()
     next_assistant_message = st.empty()
     st.session_state.chat_spinner = st.container()
-st.markdown(
-    """
-    <style>
-    [data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        gap: 10px;  /* Space between buttons */
-        padding-bottom: 10px;  /* Space for scrollbar */
-        justify-content: flex-start !important;  /* Align items to start */
-        max-width: 100% !important;
-    }
-    
-    /* Lock column widths to a specific size */
-    [data-testid="stHorizontalBlock"] > div {
-        flex: 0 0 80px !important;  /* Fixed width for columns */
-        min-width: 80px !important;
-        width: 80px !important;
-        margin-right: 0 !important;
-    }
-    
-    /* Make buttons fill their container */
-    [data-testid="stHorizontalBlock"] button {
-        width: 100% !important;
-        min-width: unset !important;
-        padding: 0 8px !important;
-    }
-    
-    /* Hide scrollbar (optional) */
-    [data-testid="stHorizontalBlock"]::-webkit-scrollbar {
-        display: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
-custom_columns()
-col1, col2, col3, col4 = st.columns((1, 1, 1, 1))
+on_mobile = st.session_state.get('on_mobile', False)
+if on_mobile:
+    custom_columns()
+    col1, col2, col3, col4 = st.columns((1, 1, 1, 1))
+else:
+    col1, col2, col3, _, col4 = st.columns((1, 1, 1, 7, 3))
 
 with col1:
     custom_button()
@@ -174,15 +137,15 @@ with col2:
 with col3:
     custom_button()
     download_chat_session = download_chat_button(st.session_state["tool name"], 
-                                                 container=col3,
-                                                 include_text=False)
+                                                container=col3,
+                                                include_text=False)
 # Send chat to teacher button
 if st.session_state.teacher_email:
     with col4:
         st.markdown(' ')
         send_chat_button(st.session_state["tool name"], 
-                         container=col4,
-                         include_text=False)
+                        container=col4,
+                        include_text=False if on_mobile else True)
 
 
 if st.session_state.drop_file:
@@ -207,7 +170,6 @@ with input_container:
 
 # Speech to Text
 audio_prompt = ''
-print(f'audio: {len(audio)}')
 if len(audio) > 0:
     del st.session_state[f'audio_recorder_{st.session_state.audio_recorder_key}']
     st.session_state.audio_recorder_key += 1
@@ -257,6 +219,9 @@ if prompt:
 
     # Re-run the app to update the conversation
     st.rerun()
+
+st.header(' ', anchor='bottom')
+scroll_to('bottom')
 
 # Equation Creator
 with st.sidebar:

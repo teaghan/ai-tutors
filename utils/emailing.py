@@ -24,7 +24,7 @@ def send_email_support(user_email, message):
     body = 'User: ' + user_email + '\n\n' + message
     send_email(subject, body, sender, sender_password, recipient)
 
-def send_email_chat(teacher_email, student_name, message, html_contents, filename):
+def send_email_chat(teacher_email, student_name, message, pdf_content, filename):
     sender = 'build.ai.tutors@gmail.com'
     recipient = teacher_email
     sender_password = os.environ['EMAIL_PASSWORD']
@@ -64,7 +64,7 @@ def send_email_chat(teacher_email, student_name, message, html_contents, filenam
     msg.attach(MIMEText(body, 'html'))
     
     # Attach the HTML content directly
-    attachment = MIMEApplication(html_contents.encode('utf-8'))
+    attachment = MIMEApplication(pdf_content)
     attachment.add_header('Content-Disposition', 'attachment', filename=filename)
     msg.attach(attachment)
         

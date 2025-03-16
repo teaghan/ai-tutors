@@ -5,6 +5,7 @@ from utils.tutor_data import read_csv
 from utils.user_data import read_users
 from utils.styling import load_style
 from utils.memory_manager import initialize_memory_and_heartbeat, update_session_activity
+from utils.check_window import on_mobile
 
 def load_data():
     # Load tutor data file or cached data
@@ -58,6 +59,9 @@ def check_state(check_user=False, reset_chat=False,
         if st.session_state.authentication_status is None:
             st.switch_page("main.py")
 
+    # Check if user is on mobile
+    on_mobile()
+
 def login():
     
     # Creating a login widget
@@ -95,8 +99,8 @@ def reset_teacher_email():
 def reset_chatbot():
     st.session_state['model_loaded'] = False
     st.session_state['messages'] = []
-    st.session_state['model_loads'] = 0
     st.session_state['file_upload_key'] = 0
     st.session_state['stream_init_msg'] = True
-    st.session_state['audio'] = ''
     st.session_state['drop_file'] = False
+    st.session_state['email_sent'] = False
+    st.session_state['audio_recorder_key'] = 0
