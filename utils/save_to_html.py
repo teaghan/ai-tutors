@@ -27,7 +27,7 @@ def latex_to_svg(latex: str, is_inline: bool = True) -> str:
         if is_inline:
             plt.text(0, 0, f'${latex}$', fontsize=10)
         else:
-            plt.text(0, 0, f'$${latex}$$', fontsize=14)
+            plt.text(0, 0, f'${latex}$', fontsize=14)
             
         # Remove axes and margins
         plt.axis('off')
@@ -81,14 +81,8 @@ def generate_pdf(html_content: str) -> bytes:
     Generate PDF from HTML content with proper font configuration.
     """
     font_config = FontConfiguration()
-    css = '''
-        @font-face {
-            font-family: 'Noto Color Emoji';
-            src: url('https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf');
-        }
-    '''
     return weasyprint.HTML(string=html_content).write_pdf(
-        stylesheets=[weasyprint.CSS(string=css)],
+        stylesheets=[],
         font_config=font_config
     )
 
@@ -201,7 +195,16 @@ def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, 
     md_content = header + md_content
 
     # Convert markdown to HTML with syntax highlighting
-    html_content = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite'])
+    extensions = [
+        'markdown.extensions.fenced_code',
+        'markdown.extensions.codehilite',
+        'markdown.extensions.tables',
+        'markdown.extensions.nl2br',  # Convert newlines to line breaks
+        'markdown.extensions.sane_lists',  # Better list handling
+        'pymdownx.emoji'  # This is the correct emoji extension
+    ]
+    
+    html_content = markdown.markdown(md_content, extensions=extensions)
 
     # Get CSS for syntax highlighting from Pygments
     css = HtmlFormatter(style='tango').get_style_defs('.codehilite')
@@ -209,18 +212,15 @@ def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, 
     # Convert math expressions to SVG
     html_content = convert_math_to_svg(html_content)
 
-    # Add styling
+    # Add meta charset for proper emoji rendering
     html_content = f"""
     <html>
     <head>
+        <meta charset="utf-8">
         <style>
             {css}
-            @font-face {{
-                font-family: 'Noto Color Emoji';
-                src: url('https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf');
-            }}
             body {{ 
-                font-family: Arial, 'Noto Color Emoji', sans-serif; 
+                font-family: Arial, sans-serif; 
                 padding: 20px;
                 max-width: 800px;
                 margin: 0 auto;
