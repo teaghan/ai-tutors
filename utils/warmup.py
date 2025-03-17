@@ -5,7 +5,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 import utils.access_codes
-import utils.calculator
 import utils.config
 import utils.display_tutors
 import utils.https
@@ -27,16 +26,17 @@ import llms.models
 import llms.moderator_llm
 import llms.tutor_llm
 
-def warm_start():
-    port = os.environ.get("PORT", "8501")
-    url = f"http://localhost:{port}"
-    print(f'Trying to warm up {url}')
+def warm_start(try_url=True):
+    if try_url:
+        port = os.environ.get("PORT", "8501")
+        url = f"http://localhost:{port}"
+        print(f'Trying to warm up {url}')
 
-    try:
-        response = requests.get(url)
-        print("Warm-up successful:", response.status_code)
-    except Exception as e:
-        print("Warm-up failed:", e)
+        try:
+            response = requests.get(url)
+            print("Warm-up successful:", response.status_code)
+        except Exception as e:
+            print("Warm-up failed:", e)
 
 if __name__ == "__main__":
     warm_start()

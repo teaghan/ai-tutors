@@ -23,6 +23,7 @@ def latex_to_svg(latex: str, is_inline: bool = True) -> str:
             fig = plt.figure(figsize=(6, 1))  # Adjusted for display equations
         fig.patch.set_alpha(0)
         
+        print('latex: ', latex)
         # Add text with LaTeX
         if is_inline:
             plt.text(0, 0, f'${latex}$', fontsize=10)
@@ -81,7 +82,8 @@ def generate_pdf(html_content: str) -> bytes:
     Generate PDF from HTML content with proper font configuration.
     """
     font_config = FontConfiguration()
-    return weasyprint.HTML(string=html_content).write_pdf(
+    html = weasyprint.HTML(string=html_content, url_fetcher=lambda url: {'string': '', 'mime_type': 'text/css'})
+    return html.write_pdf(
         stylesheets=[],
         font_config=font_config
     )
@@ -194,17 +196,32 @@ def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, 
 
     md_content = header + md_content
 
+    # Pre-process display math blocks to protect them
+    display_math_blocks = []
+    def save_display_math(match):
+        math = match.group(1).strip()
+        display_math_blocks.append(math)
+        return f"DISPLAY_MATH_PLACEHOLDER_{len(display_math_blocks)-1}"
+    
+    # Save display math blocks and replace with placeholders
+    display_math_pattern = re.compile(r'(?<!\\)\$\$(.*?)\$\$', re.DOTALL)
+    md_content = re.sub(display_math_pattern, save_display_math, md_content)
+
     # Convert markdown to HTML with syntax highlighting
     extensions = [
         'markdown.extensions.fenced_code',
         'markdown.extensions.codehilite',
         'markdown.extensions.tables',
-        'markdown.extensions.nl2br',  # Convert newlines to line breaks
-        'markdown.extensions.sane_lists',  # Better list handling
-        'pymdownx.emoji'  # This is the correct emoji extension
+        'markdown.extensions.nl2br',
+        'markdown.extensions.sane_lists',
     ]
     
     html_content = markdown.markdown(md_content, extensions=extensions)
+
+    # Restore display math blocks
+    for i, math in enumerate(display_math_blocks):
+        placeholder = f"DISPLAY_MATH_PLACEHOLDER_{i}"
+        html_content = html_content.replace(placeholder, f"$${math}$$")
 
     # Get CSS for syntax highlighting from Pygments
     css = HtmlFormatter(style='tango').get_style_defs('.codehilite')
@@ -212,18 +229,21 @@ def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, 
     # Convert math expressions to SVG
     html_content = convert_math_to_svg(html_content)
 
-    # Add meta charset for proper emoji rendering
     html_content = f"""
     <html>
     <head>
-        <meta charset="utf-8">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
         <style>
             {css}
             body {{ 
-                font-family: Arial, sans-serif; 
+                font-family: Arial, sans-serif;
                 padding: 20px;
                 max-width: 800px;
                 margin: 0 auto;
+            }}
+            *[class*="emoji"], 
+            *[class*=""] {{
+                font-family: 'Noto Color Emoji', Arial, sans-serif !important;
             }}
             h1, h2 {{ 
                 color: {theme_color};

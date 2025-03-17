@@ -16,4 +16,3 @@ google-cloud-speech==2.31.0
 weasyprint==64.1
 matplotlib==3.10.0
 streamlit-equation-editor==0.1.0
-pymdown-extensions==10.13
