@@ -235,18 +235,15 @@ def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, 
     html_content = f"""
     <html>
     <head>
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <style>
             {css}
             body {{ 
-                font-family: Arial, sans-serif;
+                font-family: system-ui, -apple-system, Arial, sans-serif;
                 padding: 20px;
                 max-width: 800px;
                 margin: 0 auto;
-            }}
-            *[class*="emoji"], 
-            *[class*=""] {{
-                font-family: 'Noto Color Emoji', Arial, sans-serif !important;
             }}
             h1, h2 {{ 
                 color: {theme_color};
