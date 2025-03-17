@@ -19,7 +19,7 @@ def equation_creator():
                              label_visibility="collapsed")
 
     #if st.session_state.input_equation != "":
-    st.columns((1,20))[1].markdown("to show the AI Tutor this equation:")
+    st.markdown("> to show the AI Tutor this equation:")
     latex_display = st.empty()
     if st.session_state.input_equation == "":
         latex_display.markdown("...")

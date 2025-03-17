@@ -119,12 +119,11 @@ if len(st.session_state.messages)>0:
 def equation_editor():
     text = equation_creator()
 
-
 # Organize buttons based on screen size
 on_mobile = st.session_state.get('on_mobile', False)
 if on_mobile:
     custom_columns()
-    col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
+    col1, col2, col3, col5, col4 = st.columns((1, 1, 1, 1, 1))
 else:
     col1, col2, col3, col4, _, col5 = st.columns((1, 1, 1, 1, 7, 3))
 

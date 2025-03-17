@@ -107,43 +107,39 @@ def button_style():
     return custom_button
 
 def columns_style():
-    
-    def custom_columns():        
+    def custom_columns():
         st.markdown(
         """
         <style>
-        [data-testid="stHorizontalBlock"] {
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"] {
             flex-wrap: nowrap !important;
             overflow-x: auto !important;
-            gap: 10px;  /* Space between buttons */
-            padding-bottom: 10px;  /* Space for scrollbar */
-            justify-content: flex-start !important;  /* Align items to start */
+            gap: 10px;
+            padding-bottom: 10px;
+            justify-content: flex-start !important;
             max-width: 100% !important;
         }
         
-        /* Lock column widths to a specific size */
-        [data-testid="stHorizontalBlock"] > div {
-            flex: 0 0 80px !important;  /* Fixed width for columns */
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"] > div {
+            flex: 0 0 80px !important;
             min-width: 80px !important;
             width: 80px !important;
             margin-right: 0 !important;
         }
         
-        /* Make buttons fill their container */
-        [data-testid="stHorizontalBlock"] button {
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"] button {
             width: 100% !important;
             min-width: unset !important;
             padding: 0 8px !important;
         }
         
-        /* Hide scrollbar (optional) */
-        [data-testid="stHorizontalBlock"]::-webkit-scrollbar {
+        .element-container:has(#scrollable-columns-after) + div [data-testid="stHorizontalBlock"]::-webkit-scrollbar {
             display: none;
         }
         </style>
         """,
         unsafe_allow_html=True
-    )
+        )
         st.markdown('<span id="scrollable-columns-after"></span>', unsafe_allow_html=True)
     
     return custom_columns
