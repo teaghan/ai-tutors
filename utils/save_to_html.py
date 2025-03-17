@@ -81,8 +81,14 @@ def generate_pdf(html_content: str) -> bytes:
     Generate PDF from HTML content with proper font configuration.
     """
     font_config = FontConfiguration()
+    css = '''
+        @font-face {
+            font-family: 'Noto Color Emoji';
+            src: url('https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf');
+        }
+    '''
     return weasyprint.HTML(string=html_content).write_pdf(
-        stylesheets=[],
+        stylesheets=[weasyprint.CSS(string=css)],
         font_config=font_config
     )
 
@@ -209,8 +215,12 @@ def markdown_to_html(md_content: str, tool_name: str, student_name: str = None, 
     <head>
         <style>
             {css}
+            @font-face {{
+                font-family: 'Noto Color Emoji';
+                src: url('https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf');
+            }}
             body {{ 
-                font-family: Arial, sans-serif; 
+                font-family: Arial, 'Noto Color Emoji', sans-serif; 
                 padding: 20px;
                 max-width: 800px;
                 margin: 0 auto;
