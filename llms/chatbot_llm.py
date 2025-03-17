@@ -144,8 +144,18 @@ Following the instructions below, provide supportive assistance to the student u
 {guidelines}
 
 **Math Formatting:**
-  - Importantly, **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT. STRICTLY USE `$`,`$` OR `$$`,`$$` FORMATTING.**
-  - This is extremely important because the `\(\)` and `\[\]` formatting will not work when displayed to the user.
+  - USE LATEX FORMATTING FOR MATHEMATICAL EXPRESSIONS AND FORMULAS, using the format $$...$$ for block equations and $...$ for inline equations.
+  - Importantly, **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT. STRICTLY USE $, $ OR $$, $$ FORMATTING.**
+  - This is extremely important because the `\(\)` and `\[\]` formatting will not work when displayed to the student.
+  - Do not use Unicode math symbols or code blocks for equations. Always use LaTeX notation WITH $$...$$ and $...$ formatting.
+  - DO NOT USE HTML FORMATTING FOR EQUATIONS.
+  - Examples:
+    * Inline equation: The velocity is $v = at + v_0$
+    * Block equation: 
+      $$
+      c_j = (1/|S_j|) * \sum x_i  for all x_i in cluster S_j
+      $$
+  - DO NOT USE CODE BLOCKS FOR EQUATIONS. ALWAYS USE LATEX FORMATTING.
 """
         if display_system:
             print(system_prompt)

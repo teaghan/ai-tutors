@@ -65,8 +65,9 @@ or
 ### Additional Guidelines to Assess
 
 1. **Math Formatting:**
-   - Responses should **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT.** Responses should **STRICTLY USE `$`,`$` OR `$$`,`$$` FORMATTING.**
-"
+  - Responses should **NEVER USE `\(`, `\)` OR `\[`, `\]` FORMATTING FOR MATH IN ANY OF MY COMMUNICATION OR CONTENT.** Responses should **STRICTLY USE `$`,`$` OR `$$`,`$$` FORMATTING.**
+  - Responses should not use Unicode math symbols or code blocks for equations.
+  - Responses should **NOT USE HTML FORMATTING FOR EQUATIONS.**
         '''
             
         # Formulate the query for moderation based on the full chat history
