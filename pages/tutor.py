@@ -1,4 +1,5 @@
 import streamlit as st
+from st_equation_editor import mathfield
 import time
 from audiorecorder import audiorecorder
 
@@ -6,10 +7,11 @@ from llms.tutor_llm import TutorChain
 from utils.menu import menu
 from utils.session import check_state, reset_chatbot
 from utils.save_to_html import download_chat_button, escape_markdown, send_chat_button
-from utils.calculator import equation_creator
 from utils.file_handler import extract_text_from_different_file_types
 from utils.speech_to_txt import stt
 from utils.styling import button_style, columns_style, scroll_to
+
+
 pause_time_between_chars = 0.01
 
 if "tool name" in st.session_state:
@@ -114,10 +116,12 @@ if len(st.session_state.messages)>0:
     next_assistant_message = st.empty()
     st.session_state.chat_spinner = st.container()
 
-@st.dialog("Equation Editor", width='large')
+# Equation Editor
+@st.dialog("Math Editor", width='large')
 def equation_editor():
-    text = equation_creator()
-    
+    st.markdown("*Create a math expression, copy it, and paste it into your message.*")
+    Tex, MathML = mathfield("")
+
 # Organize buttons based on screen size
 on_mobile = st.session_state.get('on_mobile', False)
 if on_mobile:
