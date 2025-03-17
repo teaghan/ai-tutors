@@ -139,32 +139,35 @@ def convert_messages_to_markdown(messages: List[Dict[str, str]], code_block_inde
 def _indent_content(content: str, code_block_indent: str) -> str:
     """
     Helper function to indent the content for markdown formatting.
-
-    Args:
-        content (str): The content of the message to be indented.
-        code_block_indent (str): The string used to indent lines within code blocks.
-
-    Returns:
-        The indented content as a string.
     """
     if content is not None:
         lines = content.split('\n')
         indented_lines = []
         in_code_block = False  # Flag to track whether we're inside a code block
+        in_display_math = False  # Flag to track whether we're inside display math
 
         for line in lines:
+            # Check for display math
+            if line.strip().startswith('$$'):
+                in_display_math = not in_display_math
+                indented_lines.append(line)
+                continue
+            
+            # Check for code blocks
             if line.strip().startswith('```'):
                 in_code_block = not in_code_block
                 indented_lines.append(line)
-            elif not in_code_block:
-                line = f"> {line}"
-                indented_lines.append(line)
-            else:
+            elif in_code_block:
                 indented_line = code_block_indent + line  # Apply indentation
                 indented_lines.append(indented_line)
+            elif in_display_math:
+                # Don't add blockquote for display math content
+                indented_lines.append(line)
+            else:
+                line = f"> {line}"
+                indented_lines.append(line)
 
         return '\n'.join(indented_lines)
-    
     else:
         return ""
 
