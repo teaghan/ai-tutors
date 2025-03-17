@@ -114,19 +114,27 @@ if len(st.session_state.messages)>0:
     next_assistant_message = st.empty()
     st.session_state.chat_spinner = st.container()
 
+
+@st.dialog("Equation Editor")
+def equation_editor():
+    text = equation_creator()
+
+
+# Organize buttons based on screen size
 on_mobile = st.session_state.get('on_mobile', False)
 if on_mobile:
     custom_columns()
-    col1, col2, col3, col4 = st.columns((1, 1, 1, 1))
+    col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
 else:
-    col1, col2, col3, _, col4 = st.columns((1, 1, 1, 7, 3))
+    col1, col2, col3, col4, _, col5 = st.columns((1, 1, 1, 1, 7, 3))
 
+# File upload button
 with col1:
     custom_button()
     if st.button("📎", help="Attach file"):
         st.session_state.drop_file = True
 
-# Button for resetting the chat.
+# Reset chat button
 with col2:
     custom_button()
     if st.button("🔄", use_container_width=False, help="Reset chat"):
@@ -139,14 +147,21 @@ with col3:
     download_chat_session = download_chat_button(st.session_state["tool name"], 
                                                 container=col3,
                                                 include_text=False)
+    
+# Calculator button
+with col4:
+    custom_button()
+    if st.button("![Calculator](https://raw.githubusercontent.com/teaghan/ai-tutors/main/images/calculator.png)",
+                 help="Type an equation"):
+        equation_editor()
+
 # Send chat to teacher button
 if st.session_state.teacher_email:
-    with col4:
+    with col5:
         st.markdown(' ')
         send_chat_button(st.session_state["tool name"], 
-                        container=col4,
+                        container=col5,
                         include_text=False if on_mobile else True)
-
 
 if st.session_state.drop_file:
     # File uploader
@@ -166,7 +181,7 @@ with input_container:
     audio = audiorecorder(start_prompt="", stop_prompt="", pause_prompt="",
                             show_visualizer=True, key=f'audio_recorder_{st.session_state.audio_recorder_key}')
     # Text input
-    prompt = st.chat_input()
+    prompt = st.chat_input(key='chat_input_text')
 
 # Speech to Text
 audio_prompt = ''
@@ -222,11 +237,6 @@ if prompt:
 
 st.header(' ', anchor='bottom')
 scroll_to('bottom')
-
-# Equation Creator
-with st.sidebar:
-    with st.expander("Equation Creator"):
-        equation_creator()
 
 # Edit AI Tutor
 if st.session_state["tutor_test_mode"]:
