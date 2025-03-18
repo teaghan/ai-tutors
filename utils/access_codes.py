@@ -24,7 +24,7 @@ def use_code(df_access, df_tutors, access_code):
         end_datetime_str = selected_row["End Date"].values[0]  # This includes date and time
 
         # Check if the end date is NaN
-        if pd.isna(end_datetime_str):
+        if pd.isna(end_datetime_str) or end_datetime_str == '':
             end_datetime = None  # No expiration
         else:
             try:
@@ -175,7 +175,7 @@ def extend_code(username, code):
     current_end_date_str = selected_row["End Date"].values[0]
 
     # If the current end date is NaN (no end date), set the current end date to now
-    if pd.isna(current_end_date_str):
+    if pd.isna(current_end_date_str) or current_end_date_str == '':
         current_end_datetime = datetime.now(tz=timezone.utc)
     else:
         current_end_datetime = datetime.strptime(current_end_date_str, '%Y-%m-%d %H:%M')
@@ -251,7 +251,7 @@ def display_codes():
             with col3:
                 # Check if date is NaN or None, display 'N/A' instead
                 st.markdown("<div style='margin-bottom: 50px;'></div>", unsafe_allow_html=True)
-                display_date = "N/A" if pd.isna(date) else date
+                display_date = "N/A" if (pd.isna(date) or date == '') else date
                 st.markdown(display_date)
             with col4:
                 st.markdown("<div style='margin-bottom: 35px;'></div>", unsafe_allow_html=True)
