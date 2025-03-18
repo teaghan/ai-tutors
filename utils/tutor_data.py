@@ -1,11 +1,6 @@
 import streamlit as st
 import pandas as pd
 import s3fs
-
-#from st_files_connection import FilesConnection
-import json
-from pinecone import Pinecone
-import os
 import ast
 
 @st.cache_data(show_spinner=False)
@@ -13,7 +8,7 @@ def read_csv(fn):
     # Create connection object and retrieve file contents.
     fs = s3fs.S3FileSystem(anon=False)
     with fs.open(fn, 'rb') as f:
-        return pd.read_csv(f)
+        return pd.read_csv(f).fillna('')
 
 def write_csv(fn, df):
     # Create connection object and write file contents.
@@ -34,9 +29,10 @@ def select_instructions(df, tool_name):
         introduction = selected_row["Introduction"].values[0]
         instructions = selected_row["Instructions"].values[0]
         guidelines = selected_row["Guidelines"].values[0]
+        knowledge = selected_row["Knowledge Base"].values[0]
         availability = selected_row["Availability"].values[0]
 
-        return description, introduction, instructions, guidelines, availability
+        return description, introduction, instructions, guidelines, knowledge, availability
     else:
         print(f"No entry found for {tool_name}")
 
@@ -88,13 +84,11 @@ def ask_for_overwrite():
         st.rerun()
 
 def create_tutor(fn, new_name, new_descr, new_intro, 
-                 new_instr, file_paths, new_guide, 
+                 new_instr, new_knowledge, new_guide, 
                  selected_grades, selected_subjects, 
                  availability, user_email, overwrite=False):
     # Read current csv
     df = read_csv(fn)
-
-    file_paths_json = json.dumps(file_paths)
 
     # Create a new row as a DataFrame
     new_row = pd.DataFrame({
@@ -102,7 +96,7 @@ def create_tutor(fn, new_name, new_descr, new_intro,
         "Description": [new_descr],
         "Introduction": [new_intro],
         "Instructions": [new_instr], 
-        "Knowledge Files": [file_paths_json],  # Store as JSON string
+        "Knowledge Base": [new_knowledge],
         "Guidelines": [new_guide],
         "Grades": [selected_grades],
         "Subjects": [selected_subjects],
@@ -122,16 +116,8 @@ def create_tutor(fn, new_name, new_descr, new_intro,
     
     # Write the updated DataFrame to a CSV file
     write_csv(fn, df)
-
-    delete_embeddings(new_name)
     
     return df
-
-def delete_embeddings(tool_name):
-    index_name = tool_name.lower().replace(' ','-')
-    pc = Pinecone(api_key=os.environ["PC_API_KEY"])
-    if index_name in pc.list_indexes().names():
-        pc.delete_index(index_name)
 
 def delete_tutor(fn, tool_name):
     # Read current csv

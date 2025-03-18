@@ -15,12 +15,12 @@ class ContentModerator:
 
     """
 
-    def __init__(self, guidelines, llm_model, chat_engine=None, display_guidelines=False):
+    def __init__(self, llm_model, guidelines, instructions, display_guidelines=False):
         self.llm = llm_model
-        self.chat_engine = chat_engine
         # Load pre-defined moderation guidelines
         self.guidelines = guidelines
-
+        self.instructions = instructions
+        
         # Optionally print out the guidelines
         if display_guidelines:
             print(f"The following guidelines will be used:\n")
@@ -44,7 +44,15 @@ class ContentModerator:
         system_prompt = f'''
 # Your Task
 
+You are a moderator for an AI tutor.
+
 Based on the moderation guidelines below, your task is to determine if the response from the AI assistant is appropriate given the prior conversation.
+
+#### AI Tutor's Instructions
+
+For further reference, here are the instructions that the AI tutor is following:
+
+{self.instructions}
 
 # Response Format 
 
@@ -151,19 +159,13 @@ Your Task: Provide a corrected response based on the full conversation that is a
         ]
 
         # Run the correction prompt through the corrector LLM
-        if self.chat_engine is not None:
-            corrected_response = self.chat_engine.chat(correction_prompt, message_history[:-1]).response
-        else:
-            corrected_response = self.llm.chat(message_history).message.content
+        corrected_response = self.llm.chat(message_history).message.content
         '''
 
         prompt = PromptTemplate(system_prompt+'\n\n'+correction_prompt)
 
         # Run the correction prompt through the corrector LLM
-        if self.chat_engine is not None:
-            corrected_response = self.chat_engine.predict(prompt)
-        else:
-            corrected_response = self.llm.predict(prompt)
+        corrected_response = self.llm.predict(prompt)
 
         # Optionally remove quotes if they exist in the output
         if corrected_response.startswith('"') and corrected_response.endswith('"'):

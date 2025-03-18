@@ -6,25 +6,20 @@ from llms.models import get_llm
 
 class TutorChain:
     def __init__(self, 
-                 tool_name, 
                  instructions, 
                  guidelines,
                  introduction, 
-                 knowledge_file_paths):
+                 knowledge):
 
         # Initialize the OpenAI LLM
         llm_model = get_llm()
         
         # Initialize the tutor with the LLM and instructions
-        self.tutor_llm = AITutor(llm_model, tool_name, instructions, introduction, 
-                                 guidelines,
-                                 knowledge_file_paths)
+        self.tutor_llm = AITutor(llm_model, instructions, introduction, guidelines, knowledge, display_system=True)
         self.init_request = self.tutor_llm.message_history[-1].content
 
         # Create an instance of the ContentModerator class
-        self.moderator_llm = ContentModerator(guidelines, 
-                                             llm_model,
-                                              self.tutor_llm.chat_engine)
+        self.moderator_llm = ContentModerator(llm_model, guidelines, instructions)
 
     def get_response(self, student_prompt, moderate=True, max_moderations=3):
         if 'chat_spinner' in st.session_state:

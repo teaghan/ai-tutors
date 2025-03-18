@@ -46,8 +46,8 @@ def use_code(df_access, df_tutors, access_code):
          st.session_state["introduction"],
          st.session_state["instructions"],
          st.session_state["guidelines"],
+         st.session_state["knowledge"],
          st.session_state["availability"]) = select_instructions(df_tutors, tool_name=tool_name)
-        st.session_state["knowledge_file_paths"] = get_file_paths(df_tutors, tool_name)
 
         st.session_state["tool name"] = tool_name
         st.session_state["tutor_test_mode"] = False

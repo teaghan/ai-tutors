@@ -1,6 +1,8 @@
+import streamlit as st
 import yaml
 import os
 
+@st.cache_data
 def open_config(config_dir="../config"):
     """
     Loads all configuration files from the config directory into a nested dictionary.

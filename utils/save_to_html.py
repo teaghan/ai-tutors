@@ -315,10 +315,26 @@ def is_valid_file_name(file_name: str) -> bool:
                 file_name in reserved_words or
                 len(file_name) > 255)
 
-def download_chat_button(tool_name, container, include_text=True):
-    session_md = convert_messages_to_markdown(st.session_state.messages)
-    session_html = markdown_to_html(session_md, tool_name)
+
+@st.dialog("Save Chat")
+def download_dialog(tool_name):
+    with st.spinner("Processing chat..."):
+        session_md = convert_messages_to_markdown(st.session_state.messages)
+        session_html = markdown_to_html(session_md, tool_name)
+        pdf_content = generate_pdf(session_html)
+
     file_name = f"ai_tutor_{''.join(str(random.randint(0, 9)) for _ in range(5))}.pdf"
+
+    download_chat_session = st.download_button(
+        label="Download",
+        data=pdf_content,
+        file_name=file_name,
+        use_container_width=True,
+        type='primary',
+        mime="application/pdf",
+    )
+
+def download_chat_button(tool_name, container, include_text=True):
 
     if include_text:
         button_text = "💾 Download Chat"
@@ -327,22 +343,14 @@ def download_chat_button(tool_name, container, include_text=True):
         button_text = "💾"
         use_container_width = False
 
-    pdf_content = generate_pdf(session_html)
-
-    download_chat_session = container.download_button(
+    download_chat_session = container.button(
         label=button_text,
-        data=pdf_content,
-        file_name=file_name,
         use_container_width=use_container_width,
         type='secondary',
-        mime="application/pdf",
         help="Save chat"
     )
     if download_chat_session:
-        if is_valid_file_name(file_name):
-            st.success("Data saved.")
-        else:
-            st.error(f"The file name '{file_name}' is not a valid file name. File not saved!", icon="🚨")
+        download_dialog(tool_name)
 
 @st.dialog("Send to Teacher")
 def send_to_teacher(tool_name):

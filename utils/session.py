@@ -86,7 +86,8 @@ def reset_build(reset_banner=False):
     st.session_state["availability"] = None
     st.session_state["overwrite_dialog"] = False
     st.session_state["overwrite"] = False
-    st.session_state["knowledge_file_paths"] = []
+    st.session_state["knowledge"] = ''
+    st.session_state["knowledge_upload_key"] = 0
     st.session_state["grades"] = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Post-Secondary']
     st.session_state["subjects"] = ['Math', 'Science', 'English', 'Computer Science', 'Arts', 
                                     'Social Studies', 'Languages', 'Career Education']

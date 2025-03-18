@@ -10,11 +10,11 @@ def load_tool(df_tutors, tool_name, test_mode=False):
     st.session_state["introduction"], 
      st.session_state["instructions"], 
      st.session_state["guidelines"], 
+     st.session_state["knowledge"], 
      st.session_state["availability"])= select_instructions(df_tutors, 
                                                            tool_name=tool_name)
     st.session_state["tool name"] = tool_name
     st.session_state["tutor_test_mode"] = test_mode
-    st.session_state["knowledge_file_paths"] = get_file_paths(df_tutors, tool_name)
     
     st.switch_page('pages/tutor.py')
 
@@ -23,16 +23,15 @@ def load_editor(df_tutors, tool_name, create_copy=False):
     st.session_state["introduction"], 
      st.session_state["instructions"], 
      st.session_state["guidelines"], 
+     st.session_state["knowledge"], 
      st.session_state["availability"]) = select_instructions(df_tutors, tool_name=tool_name)
 
     if create_copy:
         st.session_state["tool name"] = tool_name + ' (Copy)'
         st.session_state["tutor_test_mode"] = True
-        st.session_state["knowledge_file_paths"] = []
     else:
         st.session_state["tool name"] = tool_name
         st.session_state["tutor_test_mode"] = True
-        st.session_state["knowledge_file_paths"] = get_file_paths(df_tutors, tool_name)
     st.session_state["grades"], st.session_state["subjects"] = get_tags(df_tutors, tool_name)
     st.session_state["banner"] = None
     st.switch_page('pages/build_tutor.py')

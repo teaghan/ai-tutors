@@ -11,7 +11,6 @@ from utils.file_handler import extract_text_from_different_file_types
 from utils.speech_to_txt import stt
 from utils.styling import button_style, columns_style, scroll_to
 
-
 pause_time_between_chars = 0.01
 
 if "tool name" in st.session_state:
@@ -78,11 +77,10 @@ if "audio_recorder_key" not in st.session_state:
 # Load model
 if not st.session_state.model_loaded:
     # Construct pipiline
-    st.session_state['tutor_llm'] = TutorChain(st.session_state["tool name"],
-                                                st.session_state["instructions"],
+    st.session_state['tutor_llm'] = TutorChain(st.session_state["instructions"],
                                                 st.session_state["guidelines"],
                                                 st.session_state["introduction"],
-                                                st.session_state["knowledge_file_paths"])
+                                                st.session_state["knowledge"])
 
     init_request = st.session_state.tutor_llm.init_request        
     st.session_state.messages.append({"role": "assistant", "content": init_request})

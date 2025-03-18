@@ -1,111 +1,7 @@
-import streamlit as st
-import os
 from llama_index.core.llms import ChatMessage
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
-from llama_index.core.ingestion import IngestionPipeline
-from llama_index.core.node_parser import SentenceSplitter
-from llama_index.vector_stores.pinecone import PineconeVectorStore
-from pinecone import Pinecone, ServerlessSpec
-from s3fs import S3FileSystem
-
-from utils.knowledge_files import load_file_to_temp
-from llms.models import get_embed
 
 def load_text_file(file_path):
     return open(file_path, 'r').read()
-
-@st.cache_resource
-def get_chat_engine_old(openai_api_key, knowledge_file_paths):
-    # Transfer data from remote directory to local temporary directory
-    tmp_paths = [load_file_to_temp(file_path) for file_path in knowledge_file_paths]
-    
-    # Embed files
-    documents = SimpleDirectoryReader(input_files=tmp_paths).load_data()
-
-    # Initialize the OpenAI embedding model
-    embedding_model = get_embed()
-    embedding_model.api_key = openai_api_key
-
-    # Tokenizer for OpenAI's GPT models using HuggingFace API Key
-    #hf_token = os.environ["HF_API_KEY"]
-    #tokenizer = get_tokenizer(hf_token)
-
-    # Index the knowledge files using the embedding model
-    index = VectorStoreIndex.from_documents(documents, 
-                                            embed_model=embedding_model)#,
-                                            #tokenizer=tokenizer)
-    
-    # Set up the chat engine
-    return index
-
-
-def get_chat_engine(tool_name, openai_api_key, knowledge_file_paths):
-    # Connect to Pinecone index
-    index_name = tool_name.lower().replace(' ','-')#'-'.join(knowledge_file_paths)[:42]
-    pc_api_key = os.environ["PC_API_KEY"]
-    pc = Pinecone(api_key=pc_api_key)
-
-    # Pinecone and Embedding params
-    embedding_params = {'name': 'text-embedding-3-small',
-                        'dimension': 1536,
-                        'metric': 'cosine'}
-    
-    # Initialize the OpenAI embedding model
-    embedding_model = get_embed(embedding_params['name'])
-    embedding_model.api_key = openai_api_key
-
-    # Create index if it doesn't already exist
-    if index_name not in pc.list_indexes().names():
-
-        # Load data from remote directory        
-        s3_fs = S3FileSystem(anon=False, 
-                             key=os.getenv('AWS_ACCESS_KEY_ID'), 
-                             secret=os.getenv('AWS_SECRET_ACCESS_KEY'))
-        documents = SimpleDirectoryReader(input_files=knowledge_file_paths,
-                                  fs=s3_fs,
-                                  recursive=True).load_data()
-        try:
-            # Create index
-            pc.create_index(
-                index_name,
-                dimension=embedding_params['dimension'],
-                metric=embedding_params['metric'],
-                spec=ServerlessSpec(cloud="aws", region="us-east-1"))
-        
-            # Initialize your index 
-            pinecone_index = pc.Index(index_name)
-
-            # Initialize VectorStore
-            vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
-
-            # Create the embedding pipeline with transformations and vector storing
-            pipeline = IngestionPipeline(
-                transformations=[
-                    SentenceSplitter(),
-                    embedding_model,
-                ],
-                vector_store=vector_store
-            )
-
-            # Run the pipeline
-            pipeline.run(documents=documents)
-        except:
-            # Initialize your index 
-            pinecone_index = pc.Index(index_name)
-
-            # Initialize VectorStore
-            vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
-
-    else:
-        # Initialize your index 
-        pinecone_index = pc.Index(index_name)
-
-        # Initialize VectorStore
-        vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
-
-    # Set up the chat engine
-    return VectorStoreIndex.from_vector_store(vector_store=vector_store, embed_model=embedding_model)
-
 
 class AITutor:
     """
@@ -125,7 +21,7 @@ class AITutor:
         get_message_history(): Returns the history of messages in the conversation.
     """
 
-    def __init__(self, llm_model, tool_name, instructions, introduction, guidelines, knowledge_file_paths, display_system=False):
+    def __init__(self, llm_model, instructions, introduction, guidelines, knowledge, display_system=False):
         self.llm = llm_model
         self.message_history = []
         self.introduction = introduction
@@ -157,20 +53,16 @@ Following the instructions below, provide supportive assistance to the student u
       $$
   - DO NOT USE CODE BLOCKS FOR EQUATIONS. ALWAYS USE LATEX FORMATTING.
 """
+        if knowledge:
+            system_prompt += f"""
+## Knowledge Base
+
+The following files contain reference information to assist with your responses:
+
+{knowledge}
+"""
         if display_system:
             print(system_prompt)
-
-        if len(knowledge_file_paths)>0:
-            
-            index = get_chat_engine(tool_name, knowledge_file_paths)
-
-            self.chat_engine = index.as_chat_engine(chat_mode="best", 
-                                                    llm=self.llm)#, 
-                                                    #system_prompt=system_prompt)
-            self.index_routine = True
-        else:
-            self.chat_engine = None
-            self.index_routine = False
         
         # Initialize the conversation with the system prompt
         self.message_history.append(ChatMessage(role="system", content=system_prompt))
@@ -194,10 +86,7 @@ Following the instructions below, provide supportive assistance to the student u
         self.message_history.append(ChatMessage(role="user", content=student_input))
         
         # Get the response from the LLM
-        if self.index_routine:
-            response = self.chat_engine.chat(student_input, self.message_history[:-1]).response
-        else:
-            response = self.llm.chat(self.message_history).message.content
+        response = self.llm.chat(self.message_history).message.content
         
         # Add the AI's response to the history
         self.message_history.append(ChatMessage(role="assistant", content=response))
