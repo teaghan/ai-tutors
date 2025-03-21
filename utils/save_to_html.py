@@ -23,7 +23,6 @@ def latex_to_svg(latex: str, is_inline: bool = True) -> str:
             fig = plt.figure(figsize=(6, 1))  # Adjusted for display equations
         fig.patch.set_alpha(0)
         
-        print('latex: ', latex)
         # Add text with LaTeX
         if is_inline:
             plt.text(0, 0, f'${latex}$', fontsize=10)
@@ -102,9 +101,21 @@ def escape_markdown(text: str) -> str:
     markdown_chars = ['\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '#', '+', 
                      '-', '.', '!', '|', '>', '~', '^']
     
-    escaped_text = text
+    add_math = False
+    if '\n\n#### Math Attachments:\n\n' in text:
+        add_math = True
+    
+    if add_math:
+        escaped_text, math_attachments = text.split('\n\n#### Math Attachments:\n\n')
+    else:    
+       escaped_text = text
+
     for char in markdown_chars:
         escaped_text = escaped_text.replace(char, '\\' + char)
+
+    if add_math:
+        escaped_text = escaped_text + '\n\n#### Math Attachments:\n\n' + math_attachments
+    
     return escaped_text
 
 def convert_messages_to_markdown(messages: List[Dict[str, str]], code_block_indent='                 ') -> str:

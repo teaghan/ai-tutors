@@ -61,6 +61,8 @@ if "model_loaded" not in st.session_state:
     st.session_state.model_loaded = False
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
+if "math_attachments" not in st.session_state:
+    st.session_state.math_attachments = []
 if "file_upload_key" not in st.session_state:
     st.session_state.file_upload_key = 0
 if "stream_init_msg" not in st.session_state:
@@ -117,8 +119,18 @@ if len(st.session_state.messages)>0:
 # Equation Editor
 @st.dialog("Math Editor", width='large')
 def equation_editor():
-    st.markdown("*Create a math expression, copy it, and paste it into your message.*")
-    Tex, MathML = mathfield("")
+
+    attach_math_button = st.columns((1,1,1))[1].button("Attach Math", 
+                                                       type='primary',
+                                                       use_container_width=True)
+    tex, _ = mathfield("")
+
+    if attach_math_button:
+        if tex:
+            # Strip \mathrm{}
+            tex = tex.replace('\\mathrm{', '')[:-1]
+            st.session_state.math_attachments.append(tex)
+        st.rerun()
 
 # Organize buttons based on screen size
 on_mobile = st.session_state.get('on_mobile', False)
@@ -180,9 +192,22 @@ with input_container:
     # Speech input
     audio = audiorecorder(start_prompt="", stop_prompt="", pause_prompt="",
                             show_visualizer=True, key=f'audio_recorder_{st.session_state.audio_recorder_key}')
+
     # Text input
     prompt = st.chat_input(key='chat_input_text')
 
+    # Display math attachments
+    if st.session_state.math_attachments:
+        st.markdown("#### Math Attachments:")
+        for i, attachment in enumerate(st.session_state.math_attachments):
+            col1, col2 = st.columns([1, 8])
+            with col2:
+                st.markdown(f'**Math Expression {i+1}:**     ${attachment}$')
+            with col1:
+                if st.button("Remove", key=f"delete_math_{i}", 
+                            use_container_width=False):
+                    st.session_state.math_attachments.pop(i)
+                    st.rerun()
 # Speech to Text
 audio_prompt = ''
 if len(audio) > 0:
@@ -209,6 +234,13 @@ if prompt:
         del st.session_state[f'file_upload_{st.session_state.file_upload_key}']
         st.session_state.file_upload_key += 1
         st.session_state.drop_file = False
+
+    # Add the math attachments to the prompt
+    if st.session_state.math_attachments:
+        prompt += f'\n\n#### Math Attachments:\n\n'
+        for i, attachment in enumerate(st.session_state.math_attachments):
+            prompt += f'Math Expression {i+1}: ${attachment}$\n\n'
+        st.session_state.math_attachments = []
 
     # Add the uploaded file contents to the prompt
     if processed_file_text:
