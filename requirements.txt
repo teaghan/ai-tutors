@@ -15,4 +15,4 @@ streamlit-audiorecorder==0.0.6
 google-cloud-speech==2.31.0
 weasyprint==64.1
 matplotlib==3.10.0
-streamlit-equation-editor==0.3.4
+streamlit-equation-editor==0.3.5

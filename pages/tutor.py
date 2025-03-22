@@ -116,11 +116,17 @@ if len(st.session_state.messages)>0:
     next_assistant_message = st.empty()
     st.session_state.chat_spinner = st.container()
 
+on_mobile = st.session_state.get('on_mobile', False)
 # Equation Editor
-@st.dialog("Math Editor", width='large')
+@st.dialog("Math Editor", width='small' if on_mobile else 'large')
 def equation_editor():
 
-    attach_math_button = st.columns((1,1,1))[1].button("Attach Math", 
+    if on_mobile:
+        attach_math_button = st.button("Attach Math", 
+                                       type='primary',
+                                       use_container_width=True)
+    else:
+        attach_math_button = st.columns((1,1,1))[1].button("Attach Math", 
                                                        type='primary',
                                                        use_container_width=True)
     tex, _ = mathfield("")
@@ -132,7 +138,6 @@ def equation_editor():
         st.rerun()
 
 # Organize buttons based on screen size
-on_mobile = st.session_state.get('on_mobile', False)
 if on_mobile:
     custom_columns()
     col1, col2, col4, col5, col3 = st.columns((1, 1, 1, 1, 1))
