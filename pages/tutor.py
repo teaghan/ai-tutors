@@ -204,7 +204,6 @@ with input_container:
     if st.session_state.math_attachments:
         st.markdown("#### Math Attachments:")
         for i, attachment in enumerate(st.session_state.math_attachments):
-            print(attachment)
             col1, col2 = st.columns([1, 8])
             with col2:
                 st.markdown(f'**Expression {i+1}:**  ${attachment}$')
