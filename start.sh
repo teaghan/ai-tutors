@@ -18,45 +18,61 @@ if [ -f "startup.py" ]; then
     python startup.py &
 fi
 
-# Always create a simple API endpoint for debugging
-echo "Creating guaranteed API for debugging..."
+# Create a guaranteed API to satisfy Nginx
 mkdir -p api
+echo "Creating robust API endpoint..."
 cat > api/app.py << 'EOF'
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 import os
+import time
 
-app = FastAPI(title="AI Tutors API")
+# Create a very simple FastAPI application
+app = FastAPI(title="AI Tutors API", debug=True)
 
 @app.get("/")
-async def root():
-    return {"message": "API is running", "status": "OK"}
+async def root(request: Request):
+    client_host = request.client.host if request.client else "unknown"
+    return {
+        "message": "API is running", 
+        "status": "OK", 
+        "time": time.time(),
+        "client": client_host,
+        "headers": dict(request.headers)
+    }
 
 @app.get("/init_request")
-async def init_request(access_code: str = None):
+async def init_request(access_code: str = None, request: Request = None):
+    client_host = request.client.host if request.client else "unknown"
     if not access_code:
         raise HTTPException(status_code=400, detail="Missing access code")
     return {
-        "init_request": f"Debug message - received access code: {access_code}",
-        "version": "debug-fallback"
+        "init_request": f"Hello! I'm your AI Tutor. How can I help you today? (Debug: received access code: {access_code}, from: {client_host})",
+        "version": "fallback-v1",
+        "client": client_host
     }
 
 @app.post("/query")
-async def query(request_data: dict):
+async def query(request_data: dict, request: Request = None):
+    client_host = request.client.host if request.client else "unknown"
+    user_prompt = request_data.get("user_prompt", "No prompt provided")
     return {
-        "response": "This is a placeholder response for debugging. The API server is running but not fully configured.",
+        "response": f"This is a placeholder response. The FastAPI server is running correctly, but the main AI functionality isn't available. You asked: '{user_prompt}'",
         "message_history": request_data.get("message_history", []) + [
-            {"role": "user", "content": request_data.get("user_prompt", "")},
-            {"role": "assistant", "content": "This is a placeholder response for debugging. The API server is running but not fully configured."}
-        ]
+            {"role": "user", "content": user_prompt},
+            {"role": "assistant", "content": f"This is a placeholder response. The FastAPI server is running correctly, but the main AI functionality isn't available. Client: {client_host}"}
+        ],
+        "debug_info": {
+            "client": client_host,
+            "time": time.time()
+        }
     }
 EOF
 
-echo "API file created with basic endpoints"
-cat api/app.py
+echo "API file created with full debugging endpoints"
 
-# Start FastAPI with debugging output
-echo "Starting FastAPI on port 8000..."
-PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
+# Start FastAPI with debugging output - CRITICAL: bind to 0.0.0.0 instead of 127.0.0.1
+echo "Starting FastAPI on port 8000 (0.0.0.0)..."
+PYTHONPATH=. uvicorn api.app:app --host 0.0.0.0 --port 8000 --log-level debug &
 FASTAPI_PID=$!
 echo "FastAPI started with PID: $FASTAPI_PID"
 
@@ -64,7 +80,8 @@ echo "FastAPI started with PID: $FASTAPI_PID"
 if [ -f "main.py" ]; then
     # Start Streamlit
     echo "Starting Streamlit on port 8501..."
-    streamlit run main.py --server.port 8501 --server.headless true --server.enableCORS false --server.address 127.0.0.1 &
+    # Also bind Streamlit to 0.0.0.0 for better container networking
+    streamlit run main.py --server.port 8501 --server.headless true --server.enableCORS false --server.address 0.0.0.0 &
     STREAMLIT_PID=$!
     echo "Streamlit started with PID: $STREAMLIT_PID"
 else
@@ -78,29 +95,33 @@ echo "Configuring and starting Nginx..."
 envsubst '$PORT' < /etc/nginx/nginx.conf > /etc/nginx/nginx.conf.tmp
 mv /etc/nginx/nginx.conf.tmp /etc/nginx/nginx.conf
 
-# Wait for API to be ready
+# Wait for API to be ready and test explicitly
 echo "Waiting for API to start..."
 sleep 5
 ATTEMPTS=0
-while ! curl -s http://127.0.0.1:8000/ > /dev/null; do
+while ! curl -s http://localhost:8000/ > /dev/null; do
     ATTEMPTS=$((ATTEMPTS+1))
-    if [ $ATTEMPTS -gt 5 ]; then
-        echo "WARNING: API did not respond after 5 attempts"
-        # Restart the API as a last resort
-        echo "Attempting to restart the API..."
-        kill -9 $FASTAPI_PID || true
-        PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
-        FASTAPI_PID=$!
-        echo "FastAPI restarted with PID: $FASTAPI_PID"
-        sleep 5
+    if [ $ATTEMPTS -gt 3 ]; then
+        echo "WARNING: API did not respond after 3 attempts, trying direct call to 0.0.0.0..."
+        curl -v http://0.0.0.0:8000/ || echo "Direct call failed"
         break
     fi
-    echo "Waiting for API to respond..."
+    echo "Waiting for API to respond (attempt $ATTEMPTS)..."
     sleep 2
 done
 
-# Try a test request to the API to verify it's working
-curl -s http://127.0.0.1:8000/ || echo "ERROR: API is not responding to test request"
+# Test various ways to access the API to debug networking
+echo "Testing API in different ways:"
+echo "1. Via localhost:"
+curl -v http://localhost:8000/ || echo "localhost access failed"
+echo "2. Via 0.0.0.0:"
+curl -v http://0.0.0.0:8000/ || echo "0.0.0.0 access failed"
+echo "3. Via 127.0.0.1:"
+curl -v http://127.0.0.1:8000/ || echo "127.0.0.1 access failed"
+
+# View process status to confirm services are running
+echo "Process status:"
+ps aux | grep -E "uvicorn|streamlit"
 
 # Start Nginx in the foreground
 echo "Starting Nginx..."
