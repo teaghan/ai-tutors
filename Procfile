@@ -1,1 +1,1 @@
-web: bin/start-nginx python run_services.py
+#web: streamlit run main.py --server.enableCORS false --server.port $PORT --server.headless true & python startup.py & wait

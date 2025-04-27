@@ -18,4 +18,3 @@ matplotlib==3.10.0
 streamlit-equation-editor==0.3.6
 fastapi==0.112.2
 uvicorn==0.30.6
-python-multipart==0.0.6
