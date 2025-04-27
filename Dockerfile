@@ -33,17 +33,8 @@ COPY . .
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf.template
 
-# Create startup script
-RUN echo '#!/bin/bash\n\
-envsubst "\$PORT" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf\n\
-python -m api.app & \n\
-streamlit run main.py --server.port 8501 --server.headless true & \n\
-echo "Starting Nginx..."\n\
-nginx -g "daemon off;"\n\
-' > start.sh && chmod +x start.sh
-
-# Expose port
-EXPOSE $PORT
+# Copy startup script and make it executable
+RUN chmod +x start.sh
 
 # Run the application
 CMD ["./start.sh"] 

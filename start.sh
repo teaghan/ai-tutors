@@ -28,6 +28,10 @@ if check_port 8000; then
     sleep 1
 fi
 
+# Configure Nginx first to ensure it's ready
+echo "Configuring Nginx..."
+envsubst '$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+
 # Start FastAPI server with proper debugging
 echo "Starting FastAPI server..."
 PYTHONPATH=. uvicorn api.app:app --host 0.0.0.0 --port 8000 --log-level info &
@@ -44,11 +48,6 @@ else
     echo "ERROR: Could not find main.py for Streamlit"
     exit 1
 fi
-
-# Configure Nginx
-echo "Configuring Nginx..."
-envsubst '$PORT' < /etc/nginx/nginx.conf > /etc/nginx/nginx.conf.tmp
-mv /etc/nginx/nginx.conf.tmp /etc/nginx/nginx.conf
 
 # Wait for API to be ready with shorter intervals and longer timeout
 echo "Waiting for API to start..."
