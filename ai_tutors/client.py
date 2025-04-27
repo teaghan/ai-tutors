@@ -3,6 +3,7 @@ from IPython.display import Markdown, display
 from IPython import get_ipython
 from typing import List, Dict, Any, Optional
 from utils.config import open_config
+import traceback
 
 # Jupyter notebook print function
 def printmd(string: str) -> None:
@@ -24,9 +25,14 @@ class AITutor:
             verbose (bool): Whether to print responses to console
         """
         if base_url is None:
+            # Simple adjustment to automatically handle Heroku and non-Heroku URLs
             base_url = open_config()['domain']['url']
+            if 'herokuapp.com' in base_url:
+                base_url = base_url.rstrip("/") + '/api'
+            
+        print(f"Using base URL: {base_url}")
         self.access_code = access_code
-        self.base_url = base_url.rstrip("/")  # Remove trailing slash if present
+        self.base_url = base_url
         self.message_history = []
         self.verbose = verbose
 
@@ -56,6 +62,8 @@ class AITutor:
                 else:
                     print('\n\nAI Tutor:\n\n'+ self.init_message)
         except requests.exceptions.RequestException as e:
+            print(f"Error getting initial greeting: {str(e)}")
+            traceback.print_exc()
             raise ConnectionError(f"Error getting initial greeting: {str(e)}")
         
     def get_init_request(self) -> str:
@@ -71,6 +79,7 @@ class AITutor:
         url = f"{self.base_url}/init_request"
         params = {"access_code": self.access_code}
         response = requests.get(url, params=params)
+        print(f"Response: {response}")
         response.raise_for_status()
         result = response.json()
         return result.get("init_request", "")
