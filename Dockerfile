@@ -1,32 +1,46 @@
 FROM python:3.12-slim
 
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies required for WeasyPrint
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
-    software-properties-common \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    shared-mime-info \
+    mime-support \
     nginx \
     gettext-base \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Copy Nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
-# Make start script executable
-COPY start.sh .
-RUN chmod +x start.sh
+# Create startup script
+RUN echo '#!/bin/bash\n\
+envsubst "\$PORT" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf\n\
+python -m api.app & \n\
+streamlit run main.py --server.port 8501 --server.headless true & \n\
+echo "Starting Nginx..."\n\
+nginx -g "daemon off;"\n\
+' > start.sh && chmod +x start.sh
 
-# Expose port for Heroku
+# Expose port
 EXPOSE $PORT
 
-# Run the start script
+# Run the application
 CMD ["./start.sh"] 
