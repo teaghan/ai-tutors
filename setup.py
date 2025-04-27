@@ -11,11 +11,10 @@ except FileNotFoundError:
 
 setup(
     name="ai_tutors",
-    version="1.0.1",
+    version="1.0.2",
     packages=["ai_tutors"],
     install_requires=[
         "requests",
-        "pandas",
         "ipython",
     ],
     author="Teaghan O'Briain",

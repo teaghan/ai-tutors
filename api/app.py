@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="AI Tutors API",
     description="API for interacting with AI Tutors",
-    version="1.0.1",
+    version="1.0.2",
 )
 
 # Define a prompt schema for input
@@ -127,7 +127,7 @@ async def root():
     """Get API information"""
     return {
         "name": "AI Tutors API",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "endpoints": {
             "/query": "POST - Send a prompt to the AI tutor",
             "/tutor_info": "GET - Get all tutor information",
