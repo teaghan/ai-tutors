@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-# Install system dependencies for WeasyPrint
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       build-essential \
@@ -18,7 +18,6 @@ RUN apt-get update && \
       shared-mime-info \
       mime-support \
       nginx \
-      curl \
       gettext-base && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -36,9 +35,6 @@ COPY nginx.conf /etc/nginx/nginx.conf.template
 
 # Copy startup script and make it executable
 RUN chmod +x start.sh
-
-# Expose port for documentation purposes (Heroku ignores this)
-EXPOSE 80
 
 # Run the application
 CMD ["./start.sh"] 
