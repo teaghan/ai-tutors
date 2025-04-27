@@ -16,7 +16,9 @@ RUN apt-get update && \
       libjpeg-dev \
       libopenjp2-7-dev \
       shared-mime-info \
-      mime-support && \
+      mime-support \
+      nginx \
+      gettext-base && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
