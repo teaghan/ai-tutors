@@ -16,7 +16,9 @@ AI Tutors is an open-source platform that empowers educators to create, customiz
 
 ## Python API
 
-First build an AI Tutor and create an access code for that tutor.
+First, [build an AI Tutor](https://www.ai-tutors.ca/teacher_start) and **create an access code** for your tutor.
+
+Then install our Python API:
 
 ```
 pip install ai-tutors
@@ -43,4 +45,4 @@ tutor.reset_chat()
 response = tutor.get_response("Could you explain neural networks?")
 ```
 
-For detailed usage examples, see our [API usage guide](.examples/api_usage.ipynb).
+For detailed usage examples, see our [API usage guide](./examples/api_usage.ipynb).
