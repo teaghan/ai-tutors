@@ -215,15 +215,18 @@ class AITutor:
 
 **Description:** {self.description}
 
-**Availability:** {self.availability}
+**Instructions:**\n\n{self.instructions}
 
-**Knowledge Base:** {self.knowledge}
+**Guidelines:**\n\n{self.guidelines}
+
+**Knowledge Base:**\n\n{self.knowledge}
 """
             printmd(info)
         else:
             print("\n===== Tutor Information =====\n")
             print(f"Name: {self.tool_name}")
             print(f"Description: {self.description}")
-            print(f"Availability: {self.availability}")
-            print(f"Knowledge Base: {self.knowledge}")
+            print(f"Instructions:\n{self.instructions}")
+            print(f"Guidelines:\n{self.guidelines}")
+            print(f"Knowledge Base:\n{self.knowledge}")
             print("\n=============================\n")

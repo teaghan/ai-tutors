@@ -11,7 +11,7 @@ except FileNotFoundError:
 
 setup(
     name="ai_tutors",
-    version="1.0.0",
+    version="1.0.1",
     packages=["ai_tutors"],
     install_requires=[
         "requests",
