@@ -1,16 +1,11 @@
 #!/bin/bash
 set -e
 
-# Display environment variables for debugging (excluding sensitive ones)
-echo "PORT: $PORT"
-echo "Available Python modules:"
-pip list | grep -E "streamlit|fastapi|uvicorn"
+# Setup trap to kill background processes on exit
+trap 'kill $(jobs -p) 2>/dev/null' EXIT
 
-# List files to debug issues
-echo "Directory contents:"
-ls -la
-echo "API files:"
-find . -name "app.py" | grep -v "__pycache__"
+# Display environment variables for debugging
+echo "PORT: ${PORT:-8080}"
 
 # Run startup script if it exists
 if [ -f "startup.py" ]; then
@@ -18,90 +13,67 @@ if [ -f "startup.py" ]; then
     python startup.py &
 fi
 
-# Always create a simple API endpoint for debugging
-echo "Creating guaranteed API for debugging..."
-mkdir -p api
-cat > api/app.py << 'EOF'
-from fastapi import FastAPI, HTTPException
-import os
+# More robust port check that works without netcat
+check_port() {
+    (echo > /dev/tcp/127.0.0.1/$1) >/dev/null 2>&1
+    return $?
+}
 
-app = FastAPI(title="AI Tutors API")
+# Start FastAPI server
+echo "Starting FastAPI server..."
+if check_port 8000; then
+    echo "WARNING: Port 8000 already in use, skipping API server start"
+else
+    PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level info &
+    FASTAPI_PID=$!
+    echo "FastAPI started with PID: $FASTAPI_PID"
+fi
 
-@app.get("/")
-async def root():
-    return {"message": "API is running", "status": "OK"}
-
-@app.get("/init_request")
-async def init_request(access_code: str = None):
-    if not access_code:
-        raise HTTPException(status_code=400, detail="Missing access code")
-    return {
-        "init_request": f"Debug message - received access code: {access_code}",
-        "version": "debug-fallback"
-    }
-
-@app.post("/query")
-async def query(request_data: dict):
-    return {
-        "response": "This is a placeholder response for debugging. The API server is running but not fully configured.",
-        "message_history": request_data.get("message_history", []) + [
-            {"role": "user", "content": request_data.get("user_prompt", "")},
-            {"role": "assistant", "content": "This is a placeholder response for debugging. The API server is running but not fully configured."}
-        ]
-    }
-EOF
-
-echo "API file created with basic endpoints"
-cat api/app.py
-
-# Start FastAPI with debugging output
-echo "Starting FastAPI on port 8000..."
-PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
-FASTAPI_PID=$!
-echo "FastAPI started with PID: $FASTAPI_PID"
-
-# Check for the existence of the Streamlit entry point
+# Start Streamlit
 if [ -f "main.py" ]; then
-    # Start Streamlit
     echo "Starting Streamlit on port 8501..."
     streamlit run main.py --server.port 8501 --server.headless true --server.enableCORS false --server.address 127.0.0.1 &
     STREAMLIT_PID=$!
     echo "Streamlit started with PID: $STREAMLIT_PID"
 else
-    echo "WARNING: Could not find main.py for Streamlit"
-    echo "Looking for potential Streamlit entry points:"
-    find . -name "*.py" | grep -v "__pycache__" | head -10
+    echo "ERROR: Could not find main.py for Streamlit"
+    exit 1
 fi
 
-# Replace $PORT in nginx.conf with the port provided by Heroku
-echo "Configuring and starting Nginx..."
+# Configure Nginx
+echo "Configuring Nginx..."
 envsubst '$PORT' < /etc/nginx/nginx.conf > /etc/nginx/nginx.conf.tmp
 mv /etc/nginx/nginx.conf.tmp /etc/nginx/nginx.conf
 
-# Wait for API to be ready
+# Wait for API to be ready with shorter intervals
 echo "Waiting for API to start..."
-sleep 5
+MAX_ATTEMPTS=10
 ATTEMPTS=0
-while ! curl -s http://127.0.0.1:8000/ > /dev/null; do
+while ! curl -s http://127.0.0.1:8000/ > /dev/null && [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
     ATTEMPTS=$((ATTEMPTS+1))
-    if [ $ATTEMPTS -gt 5 ]; then
-        echo "WARNING: API did not respond after 5 attempts"
-        # Restart the API as a last resort
-        echo "Attempting to restart the API..."
-        kill -9 $FASTAPI_PID || true
-        PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
-        FASTAPI_PID=$!
-        echo "FastAPI restarted with PID: $FASTAPI_PID"
-        sleep 5
-        break
-    fi
-    echo "Waiting for API to respond..."
-    sleep 2
+    echo "Waiting for API to respond... (Attempt $ATTEMPTS/$MAX_ATTEMPTS)"
+    sleep 1
 done
 
-# Try a test request to the API to verify it's working
-curl -s http://127.0.0.1:8000/ || echo "ERROR: API is not responding to test request"
+if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
+    echo "WARNING: API did not respond after $MAX_ATTEMPTS attempts"
+    if [ -n "$FASTAPI_PID" ]; then
+        echo "Attempting to restart the API..."
+        kill -9 $FASTAPI_PID 2>/dev/null || true
+        PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level info &
+        FASTAPI_PID=$!
+        echo "FastAPI restarted with PID: $FASTAPI_PID"
+        sleep 3
+    fi
+fi
+
+# Verify API is working
+if curl -s http://127.0.0.1:8000/ > /dev/null; then
+    echo "API is responding correctly"
+else 
+    echo "ERROR: API is not responding to test request"
+fi
 
 # Start Nginx in the foreground
 echo "Starting Nginx..."
-nginx -g 'daemon off;' 
+exec nginx -g 'daemon off;' 

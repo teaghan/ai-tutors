@@ -3,6 +3,10 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 import os
 import logging
+import sys
+
+# Print debug message to track when this module is imported
+print(f"API module imported by: {__name__}", file=sys.stderr)
 
 # Import the tutor module - Fix import path
 from api.tutor import load_tutor
@@ -127,22 +131,3 @@ async def root():
             "/init_request": "GET - Get the initial greeting message from the tutor"
         }
     }
-
-# Function to run the API server
-def run_api(host: str = "0.0.0.0", port: int = 8000) -> None:
-    """
-    Run the FastAPI server.
-    
-    Args:
-        host: Host to bind the server to
-        port: Port to bind the server to
-    """
-    import uvicorn
-    logger.info(f"Starting AI Tutors API server on {host}:{port}")
-    uvicorn.run(app, host=host, port=port)
-
-# Allow running the file directly
-if __name__ == "__main__":
-    # Get port from environment variable or use default
-    port = int(os.environ.get("PORT", 8000))
-    run_api(port=port) 
