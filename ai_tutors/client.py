@@ -26,9 +26,13 @@ class AITutor:
         """
         if base_url is None:
             # Simple adjustment to automatically handle Heroku and non-Heroku URLs
-            base_url = open_config()['domain']['url']
-            if 'herokuapp.com' in base_url:
-                base_url = base_url.rstrip("/") + '/api'
+            try:
+                base_url = open_config()['domain']['url']
+                if 'herokuapp.com' in base_url:
+                    base_url = base_url.rstrip("/") + '/api'
+            except Exception as e:
+                print(f"Error loading config, using default local URL: {str(e)}")
+                base_url = 'http://localhost:8000'
             
         print(f"Using base URL: {base_url}")
         self.access_code = access_code
@@ -46,8 +50,10 @@ class AITutor:
 
         # Validate connection by checking API status
         try:
-            requests.get(f"{self.base_url}/")
-        except requests.exceptions.ConnectionError:
+            status_response = requests.get(f"{self.base_url}/")
+            print(f"API status: {status_response.status_code}")
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error: {str(e)}")
             raise ConnectionError(
                 f"Could not connect to AI Tutor API at {self.base_url}. "
                 "Make sure the API server is running and check your network connection."
@@ -55,6 +61,7 @@ class AITutor:
         
         # Get initial message
         try:
+            print(f"Debug message - received access code: {self.access_code}")
             self.init_message = self.get_init_request()
             if self.verbose:
                 if self.is_notebook:
@@ -78,11 +85,17 @@ class AITutor:
         """
         url = f"{self.base_url}/init_request"
         params = {"access_code": self.access_code}
-        response = requests.get(url, params=params)
-        print(f"Response: {response}")
-        response.raise_for_status()
-        result = response.json()
-        return result.get("init_request", "")
+        try:
+            response = requests.get(url, params=params)
+            print(f"Init request response: {response.status_code}")
+            if response.status_code != 200:
+                print(f"Response content: {response.text}")
+            response.raise_for_status()
+            result = response.json()
+            return result.get("init_request", "")
+        except Exception as e:
+            print(f"Error in get_init_request: {str(e)}")
+            raise
     
     def get_response(self, prompt: str, restart_chat: bool = False) -> str:
         """

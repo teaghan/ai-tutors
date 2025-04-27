@@ -4,8 +4,8 @@ from typing import Optional, List, Dict, Any
 import os
 import logging
 
-# Import the tutor module
-from ai_tutors.tutor import load_tutor
+# Import the tutor module - Fix import path
+from api.tutor import load_tutor
 from llama_index.core.llms import ChatMessage
 
 # Configure logging
