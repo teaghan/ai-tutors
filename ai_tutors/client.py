@@ -1,9 +1,7 @@
 import requests
 from IPython.display import Markdown, display
 from IPython import get_ipython
-from typing import List, Dict, Any, Optional
-from utils.config import open_config
-import traceback
+from typing import Optional
 
 # Jupyter notebook print function
 def printmd(string: str) -> None:
@@ -27,18 +25,27 @@ class AITutor:
         if base_url is None:
             # Simple adjustment to automatically handle Heroku and non-Heroku URLs
             try:
-                base_url = open_config()['domain']['url']
+                base_url = 'https://ai-tutors-252d0369f9d6.herokuapp.com/'
                 if 'herokuapp.com' in base_url:
                     base_url = base_url.rstrip("/") + '/api'
             except Exception as e:
                 print(f"Error loading config, using default local URL: {str(e)}")
                 base_url = 'http://localhost:8000'
             
-        print(f"Using base URL: {base_url}")
         self.access_code = access_code
         self.base_url = base_url
         self.message_history = []
         self.verbose = verbose
+        
+        # Tutor information attributes
+        self.instructions = ""
+        self.guidelines = ""
+        self.introduction = ""
+        self.knowledge = ""
+        self.description = ""
+        self.availability = ""
+        self.tool_name = ""
+        self.teacher_email = ""
 
         # Check if user is in a Jupyter notebook
         self.is_notebook = False
@@ -51,50 +58,51 @@ class AITutor:
         # Validate connection by checking API status
         try:
             status_response = requests.get(f"{self.base_url}/")
-            print(f"API status: {status_response.status_code}")
         except requests.exceptions.ConnectionError as e:
-            print(f"Connection error: {str(e)}")
             raise ConnectionError(
                 f"Could not connect to AI Tutor API at {self.base_url}. "
                 "Make sure the API server is running and check your network connection."
             )
         
-        # Get initial message
+        # Get tutor information
         try:
-            print(f"Debug message - received access code: {self.access_code}")
-            self.init_message = self.get_init_request()
+            self.load_tutor_info()
+            
             if self.verbose:
                 if self.is_notebook:
-                    printmd('\n\n**AI Tutor:**\n\n'+ self.init_message)
+                    printmd('\n\n**AI Tutor:**\n\n'+ self.introduction)
                 else:
-                    print('\n\nAI Tutor:\n\n'+ self.init_message)
+                    print('\n\nAI Tutor:\n\n'+ self.introduction)
         except requests.exceptions.RequestException as e:
-            print(f"Error getting initial greeting: {str(e)}")
-            traceback.print_exc()
-            raise ConnectionError(f"Error getting initial greeting: {str(e)}")
-        
-    def get_init_request(self) -> str:
+            raise ConnectionError(f"Error getting tutor information: {str(e)}")
+    
+    def load_tutor_info(self) -> None:
         """
-        Get the initial greeting message from the AI Tutor.
+        Get tutor information from the API and store it as attributes.
         
-        Returns:
-            str: The initial greeting message
-            
         Raises:
             requests.exceptions.RequestException: If the API request fails
         """
-        url = f"{self.base_url}/init_request"
+        url = f"{self.base_url}/tutor_info"
         params = {"access_code": self.access_code}
         try:
             response = requests.get(url, params=params)
-            print(f"Init request response: {response.status_code}")
-            if response.status_code != 200:
-                print(f"Response content: {response.text}")
             response.raise_for_status()
-            result = response.json()
-            return result.get("init_request", "")
+            tutor_info = response.json()
+            
+            # Store tutor information as attributes
+            self.instructions = tutor_info.get("instructions", "")
+            self.guidelines = tutor_info.get("guidelines", "")
+            self.introduction = tutor_info.get("introduction", "")
+            self.knowledge = tutor_info.get("knowledge", "")
+            self.description = tutor_info.get("description", "")
+            self.availability = tutor_info.get("availability", "")
+            self.tool_name = tutor_info.get("tool_name", "")
+            self.teacher_email = tutor_info.get("teacher_email", "")
+            
+            return tutor_info
         except Exception as e:
-            print(f"Error in get_init_request: {str(e)}")
+            print(f"Error in load_tutor_info: {str(e)}")
             raise
     
     def get_response(self, prompt: str, restart_chat: bool = False) -> str:
@@ -115,9 +123,9 @@ class AITutor:
         if restart_chat:
             if self.verbose:
                 if self.is_notebook:
-                    printmd('\n\n**AI Tutor:**\n\n'+ self.init_message)
+                    printmd('\n\n**AI Tutor:**\n\n'+ self.introduction)
                 else:
-                    print('\n\nAI Tutor:\n\n'+ self.init_message)
+                    print('\n\nAI Tutor:\n\n'+ self.introduction)
             self.message_history = []
 
         if self.verbose:
@@ -130,11 +138,24 @@ class AITutor:
         # API endpoint for querying the model
         url = f"{self.base_url}/query"
         
+        # Prepare tutor info
+        tutor_info = {
+            "instructions": self.instructions,
+            "guidelines": self.guidelines,
+            "introduction": self.introduction,
+            "knowledge": self.knowledge,
+            "description": self.description,
+            "availability": self.availability,
+            "tool_name": self.tool_name,
+            "teacher_email": self.teacher_email,
+        }
+        
         # Prepare payload
         payload = {
             "user_prompt": prompt,
             "access_code": self.access_code,
-            "message_history": self.message_history
+            "message_history": self.message_history,
+            "tutor_info": tutor_info
         }
         
         # Send request to API
@@ -177,6 +198,32 @@ class AITutor:
         self.message_history = []
         if self.verbose:
             if self.is_notebook:
-                printmd('\n\n**AI Tutor:**\n\n'+ self.init_message)
+                printmd('\n\n**AI Tutor:**\n\n'+ self.introduction)
             else:
-                print('\n\nAI Tutor:\n\n'+ self.init_message)
+                print('\n\nAI Tutor:\n\n'+ self.introduction)
+                
+    def display_tutor_info(self) -> None:
+        """
+        Display the tutor information in a formatted way.
+        Uses markdown formatting in Jupyter notebooks and plain text otherwise.
+        """
+        if self.is_notebook:
+            info = f"""
+## Tutor Information
+
+**Name:** {self.tool_name}
+
+**Description:** {self.description}
+
+**Availability:** {self.availability}
+
+**Knowledge Base:** {self.knowledge}
+"""
+            printmd(info)
+        else:
+            print("\n===== Tutor Information =====\n")
+            print(f"Name: {self.tool_name}")
+            print(f"Description: {self.description}")
+            print(f"Availability: {self.availability}")
+            print(f"Knowledge Base: {self.knowledge}")
+            print("\n=============================\n")

@@ -4,22 +4,21 @@ import logging
 from fastapi import HTTPException
 
 # Import local modules
-from llms.tutor_llm import TutorChain
 from utils.tutor_data import select_instructions, read_csv
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def load_tutor(access_code: str) -> TutorChain:
+def load_tutor_info(access_code: str) -> dict:
     """
-    Load a tutor instance based on the provided access code.
+    Load tutor information based on the provided access code.
     
     Args:
-        access_code: The access code to authenticate and load the appropriate tutor
+        access_code: The access code to authenticate and load the appropriate tutor info
         
     Returns:
-        TutorChain: The initialized tutor chain
+        dict: Dictionary containing all tutor information needed to instantiate a tutor
         
     Raises:
         HTTPException: If the access code is invalid, expired, or data files can't be accessed
@@ -79,12 +78,19 @@ def load_tutor(access_code: str) -> TutorChain:
          knowledge,
          availability) = select_instructions(df_tutors, tool_name=tool_name)
         
-        tutor_chain = TutorChain(instructions, 
-                     guidelines,
-                     introduction, 
-                     knowledge)
+        # Create a tutor info dictionary with all the necessary information
+        tutor_info = {
+            "instructions": instructions,
+            "guidelines": guidelines,
+            "introduction": introduction,
+            "knowledge": knowledge,
+            "description": description,
+            "availability": availability,
+            "tool_name": tool_name,
+            "teacher_email": teacher_email
+        }
         
-        return tutor_chain
+        return tutor_info
     except Exception as e:
-        logger.error(f"Error initializing tutor chain: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error initializing tutor: {str(e)}") 
+        logger.error(f"Error creating tutor info: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating tutor info: {str(e)}")

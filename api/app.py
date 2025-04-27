@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-import os
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 import logging
 import sys
 
@@ -9,7 +8,8 @@ import sys
 print(f"API module imported by: {__name__}", file=sys.stderr)
 
 # Import the tutor module - Fix import path
-from api.tutor import load_tutor
+from api.tutor import load_tutor_info
+from llms.tutor_llm import TutorChain
 from llama_index.core.llms import ChatMessage
 
 # Configure logging
@@ -28,6 +28,7 @@ class PromptRequest(BaseModel):
     user_prompt: str
     access_code: str
     message_history: Optional[list]
+    tutor_info: Optional[Dict[str, Any]]
 
 # Utility functions for message conversion
 def dict_to_chat_message(msg_dict: Dict[str, str]) -> ChatMessage:
@@ -44,38 +45,29 @@ def chat_message_to_dict(msg: ChatMessage) -> Dict[str, str]:
         "content": msg.content
     }
 
-# Endpoint to get the initial system prompt/greeting
-@app.get("/init_request", summary="Get initial tutor greeting")
-async def get_init_request(access_code: str):
+# Endpoint to get tutor information
+@app.get("/tutor_info", summary="Get tutor information")
+async def get_tutor_info(access_code: str):
     """
-    Get the initial greeting message from the AI Tutor.
+    Get all information about the tutor associated with the access code.
     
     Args:
         access_code: Your AI Tutor access code
         
     Returns:
-        The initial greeting message
+        All tutor information needed to instantiate a tutor
     """
     try:
-        # Load tutor using the provided access code
-        tutor = load_tutor(access_code)
+        # Load tutor info using the provided access code
+        tutor_info = load_tutor_info(access_code)
         
-        # Get the initial greeting message
-        if tutor.tutor_llm.message_history:
-            # Get assistant's first message (after system prompt)
-            for msg in tutor.tutor_llm.message_history:
-                if msg.role == "assistant":
-                    return {"init_request": msg.content}
-            
-            # Fallback to returning the init_request attribute
-            return {"init_request": tutor.init_request}
-        
-        return {"init_request": ""}
+        # Return all tutor information including the initial request
+        return tutor_info
     except HTTPException as e:
         # Re-raise HTTP exceptions
         raise e
     except Exception as e:
-        logger.error(f"Error in get_init_request: {str(e)}")
+        logger.error(f"Error in get_tutor_info: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint to call the LLM
@@ -85,14 +77,24 @@ async def query_model(request: PromptRequest):
     Send a query to the AI tutor and get a response.
     
     Args:
-        request: Request object containing user prompt, access code, and optional message history
+        request: Request object containing user prompt, access code, tutor info, and optional message history
         
     Returns:
         The tutor's response and updated message history
     """
     try:
-        # Load tutor using the provided access code
-        tutor = load_tutor(request.access_code)
+        # Use the provided tutor_info if available, otherwise load it
+        tutor_info = request.tutor_info
+        if not tutor_info:
+            tutor_info = load_tutor_info(request.access_code)
+        
+        # Create a TutorChain instance from the tutor info
+        tutor = TutorChain(
+            instructions=tutor_info.get("instructions", ""),
+            guidelines=tutor_info.get("guidelines", ""),
+            introduction=tutor_info.get("introduction", ""),
+            knowledge=tutor_info.get("knowledge", "")
+        )
 
         if request.message_history:
             # Convert JSON message history to ChatMessage objects
@@ -128,6 +130,7 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "/query": "POST - Send a prompt to the AI tutor",
-            "/init_request": "GET - Get the initial greeting message from the tutor"
+            "/tutor_info": "GET - Get all tutor information",
+            "/init_request": "GET - Get the initial greeting message from the tutor (deprecated)"
         }
     }
