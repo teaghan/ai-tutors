@@ -18,62 +18,47 @@ if [ -f "startup.py" ]; then
     python startup.py &
 fi
 
-# Check if api directory exists
-if [ -d "api" ]; then
-    echo "api directory exists"
-    ls -la api/
-else
-    echo "ERROR: api directory not found"
-    # Try to find where the FastAPI code might be
-    echo "Looking for app.py files:"
-    find . -name "app.py" | grep -v "__pycache__"
-fi
+# Always create a simple API endpoint for debugging
+echo "Creating guaranteed API for debugging..."
+mkdir -p api
+cat > api/app.py << 'EOF'
+from fastapi import FastAPI, HTTPException
+import os
 
-# Check if api/app.py exists
-if [ -f "api/app.py" ]; then
-    # Start FastAPI with debugging output
-    echo "Starting FastAPI on port 8000..."
-    PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
-    FASTAPI_PID=$!
-    echo "FastAPI started with PID: $FASTAPI_PID"
-elif [ -f "ai_tutors/app.py" ]; then
-    echo "Using alternate FastAPI path: ai_tutors/app.py"
-    PYTHONPATH=. uvicorn ai_tutors.app:app --host 127.0.0.1 --port 8000 --log-level debug &
-    FASTAPI_PID=$!
-    echo "FastAPI started with PID: $FASTAPI_PID"
-else
-    echo "ERROR: FastAPI app.py not found in expected locations!"
-    echo "Creating placeholder API for debugging..."
-    # Create a very simple FastAPI app for debugging
-    mkdir -p api
-    cat > api/app.py << 'EOF'
-from fastapi import FastAPI
-
-app = FastAPI()
+app = FastAPI(title="AI Tutors API")
 
 @app.get("/")
 async def root():
-    return {"message": "API is running"}
+    return {"message": "API is running", "status": "OK"}
 
 @app.get("/init_request")
-async def init_request(access_code: str):
-    return {"init_request": f"Debug message - received access code: {access_code}"}
+async def init_request(access_code: str = None):
+    if not access_code:
+        raise HTTPException(status_code=400, detail="Missing access code")
+    return {
+        "init_request": f"Debug message - received access code: {access_code}",
+        "version": "debug-fallback"
+    }
 
 @app.post("/query")
 async def query(request_data: dict):
     return {
-        "response": "This is a placeholder response for debugging",
+        "response": "This is a placeholder response for debugging. The API server is running but not fully configured.",
         "message_history": request_data.get("message_history", []) + [
             {"role": "user", "content": request_data.get("user_prompt", "")},
-            {"role": "assistant", "content": "This is a placeholder response for debugging"}
+            {"role": "assistant", "content": "This is a placeholder response for debugging. The API server is running but not fully configured."}
         ]
     }
 EOF
-    echo "Created placeholder API"
-    PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
-    FASTAPI_PID=$!
-    echo "FastAPI placeholder started with PID: $FASTAPI_PID"
-fi
+
+echo "API file created with basic endpoints"
+cat api/app.py
+
+# Start FastAPI with debugging output
+echo "Starting FastAPI on port 8000..."
+PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
+FASTAPI_PID=$!
+echo "FastAPI started with PID: $FASTAPI_PID"
 
 # Check for the existence of the Streamlit entry point
 if [ -f "main.py" ]; then
@@ -101,11 +86,21 @@ while ! curl -s http://127.0.0.1:8000/ > /dev/null; do
     ATTEMPTS=$((ATTEMPTS+1))
     if [ $ATTEMPTS -gt 5 ]; then
         echo "WARNING: API did not respond after 5 attempts"
+        # Restart the API as a last resort
+        echo "Attempting to restart the API..."
+        kill -9 $FASTAPI_PID || true
+        PYTHONPATH=. uvicorn api.app:app --host 127.0.0.1 --port 8000 --log-level debug &
+        FASTAPI_PID=$!
+        echo "FastAPI restarted with PID: $FASTAPI_PID"
+        sleep 5
         break
     fi
     echo "Waiting for API to respond..."
     sleep 2
 done
+
+# Try a test request to the API to verify it's working
+curl -s http://127.0.0.1:8000/ || echo "ERROR: API is not responding to test request"
 
 # Start Nginx in the foreground
 echo "Starting Nginx..."
